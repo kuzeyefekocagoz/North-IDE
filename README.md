@@ -1,5 +1,7 @@
 # North IDE
 
+https://kuzeyefekocagoz.github.io/North-IDE/
+
 Tarayıcı üzerinde Python kodu yazıp çalıştırabileceğiniz hafif ve modern bir web IDE.
 
 ## Özellikler
