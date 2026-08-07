@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>North IDE — Cross-Platform Hybrid Edition</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #1e1e1e;
+            color: #cccccc;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 13px;
+        }
+
+        /* 1. ÜST BAŞLIK & MENÜ */
+        .title-bar {
+            min-height: 40px;
+            background-color: #181818;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #2b2b2b;
+            padding: 0 8px;
+            z-index: 100;
+        }
+
+        .title-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .app-brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            color: #3b82f6;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            padding-right: 4px;
+        }
+
+        .menu-bar {
+            display: flex;
+            gap: 2px;
+        }
+
+        .menu-container {
+            position: relative;
+        }
+
+        .menu-item {
+            padding: 6px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #aaaaaa;
+            font-size: 12px;
+            transition: all 0.15s ease;
+            display: inline-block;
+        }
+
+        .menu-item:hover, .menu-item:active {
+            background-color: #2a2d2e;
+            color: #ffffff;
+        }
+
+        /* Dropdown Menüler (Body içinde mutlak konumlanacak) */
+        .dropdown {
+            display: none;
+            position: fixed;
+            background-color: #252526;
+            border: 1px solid #3c3c3c;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            min-width: 220px;
+            z-index: 99999;
+            padding: 6px 0;
+            border-radius: 6px;
+        }
+
+        .dropdown.show {
+            display: block !important;
+        }
+
+        .dropdown-item {
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            color: #cccccc;
+            font-size: 12px;
+        }
+
+        .dropdown-item:hover, .dropdown-item:active {
+            background-color: #04395e;
+            color: #ffffff;
+        }
+
+        .dropdown-shortcut {
+            font-size: 10px;
+            color: #777777;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: #3c3c3c;
+            margin: 4px 0;
+        }
+
+        /* SAĞ ÜST KONTROL ALANI */
+        .title-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .device-selector-btn {
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            color: #38bdf8;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .device-selector-btn:hover {
+            background: #3f3f46;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            background: #252526;
+            padding: 4px 8px;
+            border-radius: 12px;
+            border: 1px solid #333333;
+            color: #94a3b8;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #eab308;
+        }
+
+        .status-dot.ready {
+            background-color: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-run-main {
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-run-main:active {
+            background-color: #15803d;
+        }
+
+        /* 2. GÖVDE VE SIDEBAR */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: #181818;
+            border-right: 1px solid #2b2b2b;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s ease;
+            z-index: 50;
+        }
+
+        .sidebar.hidden {
+            display: none !important;
+        }
+
+        .sidebar-header {
+            padding: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #71717a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #222222;
+        }
+
+        .sidebar-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .sidebar-actions span {
+            color: #94a3b8;
+            font-size: 16px;
+            padding: 4px;
+            cursor: pointer;
+        }
+
+        .file-tree {
+            list-style: none;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            flex: 1;
+            padding: 4px 0;
+        }
+
+        .file-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #a1a1aa;
+            font-size: 13px;
+        }
+
+        .file-item:active, .file-item.active {
+            background-color: #27272a;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .file-delete-btn {
+            color: #ef4444;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+
+        /* 3. EDİTÖR VE MONACO WRAPPER */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e1e;
+            min-width: 0;
+        }
+
+        .tabs-header {
+            display: flex;
+            background-color: #181818;
+            border-bottom: 1px solid #2b2b2b;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab {
+            padding: 10px 14px;
+            background-color: #1f1f23;
+            color: #71717a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-right: 1px solid #2b2b2b;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background-color: #1e1e1e;
+            color: #f4f4f5;
+            border-top: 2px solid #3b82f6;
+        }
+
+        .tab-close {
+            border-radius: 3px;
+            padding: 4px 6px;
+            font-size: 11px;
+        }
+
+        #monaco-editor-wrapper {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 4. ALT PANEL (OUTPUT) */
+        .bottom-panel {
+            height: 180px;
+            background-color: #181818;
+            border-top: 1px solid #2b2b2b;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-tabs {
+            display: flex;
+            background-color: #181818;
+            border-bottom: 1px solid #2b2b2b;
+            justify-content: space-between;
+            align-items: center;
+            padding-right: 10px;
+        }
+
+        .panel-tab-group {
+            display: flex;
+        }
+
+        .panel-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+            color: #71717a;
+        }
+
+        .panel-tab.active {
+            color: #ffffff;
+            border-bottom: 2px solid #3b82f6;
+            background-color: #1e1e1e;
+        }
+
+        .panel-content {
+            flex: 1;
+            padding: 10px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            color: #e4e4e7;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            white-space: pre-wrap;
+            background-color: #0f0f11;
+        }
+
+        .btn-clear-output {
+            background: transparent;
+            border: none;
+            color: #71717a;
+            cursor: pointer;
+            font-size: 11px;
+            padding: 6px 10px;
+        }
+
+        /* STATUS BAR */
+        .status-bar {
+            height: 24px;
+            background-color: #0f172a;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 10px;
+            border-top: 1px solid #1e293b;
+        }
+
+        .status-left, .status-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* MODAL WINDOWS */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal {
+            background-color: #252526;
+            border: 1px solid #3c3c3c;
+            padding: 24px;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        .modal-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .modal-desc {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .device-option-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: #1e1e1e;
+            border: 1px solid #3c3c3c;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .device-option-btn:hover {
+            border-color: #3b82f6;
+            background-color: #182232;
+        }
+
+        .modal-input {
+            width: 100%;
+            background-color: #1e1e1e;
+            border: 1px solid #3c3c3c;
+            color: white;
+            padding: 10px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #3f3f46;
+            color: white;
+            font-size: 12px;
+        }
+
+        .modal-btn.primary {
+            background: #2563eb;
+        }
+
+        body.mobile-mode .sidebar {
+            position: absolute;
+            top: 0; bottom: 0; left: 0;
+            width: 75%;
+            max-width: 280px;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+        }
+
+        body.mobile-mode .dropdown-shortcut,
+        body.mobile-mode .status-right {
+            display: none;
+        }
+    </style>
+</head>
+<body class="auto-mode">
+
+    <div class="title-bar">
+        <div class="title-left">
+            <div class="app-brand">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+                <span>North IDE</span>
+            </div>
+            <div class="menu-bar">
+                
+                <div class="menu-container">
+                    <span class="menu-item" onclick="toggleMenu(event, 'file-menu', this)">Dosya</span>
+                    <div class="dropdown" id="file-menu">
+                        <div class="dropdown-item" onclick="promptNewFile()">
+                            <span>Yeni Dosya</span>
+                            <span class="dropdown-shortcut">Ctrl+N</span>
+                        </div>
+                        <div class="dropdown-item" onclick="downloadCurrentFile()">
+                            <span>Farklı Kaydet...</span>
+                            <span class="dropdown-shortcut">Ctrl+S</span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item" onclick="closeCurrentTab()">
+                            <span>Sekmeyi Kapat</span>
+                            <span class="dropdown-shortcut">Ctrl+W</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-container">
+                    <span class="menu-item" onclick="toggleMenu(event, 'edit-menu', this)">Düzen</span>
+                    <div class="dropdown" id="edit-menu">
+                        <div class="dropdown-item" onclick="clearConsole()">
+                            <span>Konsolu Temizle</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-container">
+                    <span class="menu-item" onclick="toggleMenu(event, 'view-menu', this)">Görünüm</span>
+                    <div class="dropdown" id="view-menu">
+                        <div class="dropdown-item" onclick="toggleSidebar()">
+                            <span>Proje Gezgini</span>
+                            <span class="dropdown-shortcut">Ctrl+B</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-container">
+                    <span class="menu-item" onclick="toggleMenu(event, 'run-menu', this)">Çalıştır</span>
+                    <div class="dropdown" id="run-menu">
+                        <div class="dropdown-item" onclick="runPythonCode()">
+                            <span>Kodu Derle ve Çalıştır</span>
+                            <span class="dropdown-shortcut">Shift+Enter</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="title-right">
+            <button class="device-selector-btn" onclick="openDeviceModal()" id="active-mode-btn">
+                🔍 Otomatik
+            </button>
+
+            <div class="status-badge" title="Python Motoru Durumu">
+                <div class="status-dot" id="engine-status-dot"></div>
+                <span id="engine-status-text">Yükleniyor</span>
+            </div>
+            <button class="btn-run-main" onclick="runPythonCode()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Çalıştır
+            </button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span>Proje Gezgini</span>
+                <div class="sidebar-actions">
+                    <span onclick="promptNewFile()" title="Yeni Dosya Ekle">+</span>
+                    <span onclick="toggleSidebar()" title="Kapat">✕</span>
+                </div>
+            </div>
+            <ul class="file-tree" id="file-tree"></ul>
+        </div>
+
+        <div class="editor-container">
+            <div class="tabs-header" id="tabs-header"></div>
+            <div id="monaco-editor-wrapper"></div>
+
+            <div class="bottom-panel">
+                <div class="panel-tabs">
+                    <div class="panel-tab-group">
+                        <div class="panel-tab active">ÇIKTI VE OTO-DEBUG (OUTPUT)</div>
+                    </div>
+                    <button class="btn-clear-output" onclick="clearConsole()">Temizle</button>
+                </div>
+                <div class="panel-content" id="output-console">Sistem hazırlanıyor...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-left">
+            <span id="cursor-pos">Satır 1, Sütun 1</span>
+            <span>UTF-8</span>
+        </div>
+        <div class="status-right">
+            <span>Python 3.11 (Pyodide) + Auto-Complete & Debug</span>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="device-modal-overlay">
+        <div class="modal">
+            <div class="modal-title">Görünüm Modunu Seçin</div>
+            <div class="modal-desc" id="detected-device-info">Cihazınız algılanıyor...</div>
+            
+            <button class="device-option-btn" onclick="applyDeviceMode('auto')">
+                <span>🤖</span> Otomatik Algıla (Tavsiye Edilen)
+            </button>
+            <button class="device-option-btn" onclick="applyDeviceMode('desktop')">
+                <span>💻</span> Masaüstü (PC) Modu
+            </button>
+            <button class="device-option-btn" onclick="applyDeviceMode('mobile')">
+                <span>📱</span> Mobil / Tablet Modu
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-title" id="modal-title">Yeni Dosya Oluştur</div>
+            <input type="text" class="modal-input" id="modal-input" placeholder="script.py">
+            <div class="modal-buttons">
+                <button class="modal-btn" onclick="closeModal()">İptal</button>
+                <button class="modal-btn primary" id="modal-confirm-btn">Oluştur</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let editor;
+        let files = {
+            'main.py': '# North IDE — Hybrid Platform\nprint("Merhaba! North IDE başarıyla başlatıldı.")\n\nnumbers = [1, 2, 3, 4, 5]\nprint("Kareler:", [x**2 for x in numbers])',
+            'helpers.py': 'def greet(name):\n    return f"Merhaba {name}"'
+        };
+        let currentFile = 'main.py';
+        let pyodideInstance = null;
+        let selectedMode = 'auto';
+
+        function detectDevice() {
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isSmallScreen = window.innerWidth <= 768;
+            return isMobileUA || isSmallScreen ? 'mobile' : 'desktop';
+        }
+
+        function applyDeviceMode(mode) {
+            selectedMode = mode;
+            const actualMode = mode === 'auto' ? detectDevice() : mode;
+            
+            const btn = document.getElementById('active-mode-btn');
+            const sidebar = document.getElementById('sidebar');
+
+            if (actualMode === 'mobile') {
+                document.body.classList.add('mobile-mode');
+                sidebar.classList.add('hidden');
+                btn.innerText = mode === 'auto' ? "📱 Mobil (Oto)" : "📱 Mobil";
+                if (editor) {
+                    editor.updateOptions({ fontSize: 12, minimap: { enabled: false }, touchSupport: true });
+                }
+            } else {
+                document.body.classList.remove('mobile-mode');
+                sidebar.classList.remove('hidden');
+                btn.innerText = mode === 'auto' ? "💻 PC (Oto)" : "💻 PC";
+                if (editor) {
+                    editor.updateOptions({ fontSize: 14, minimap: { enabled: true }, touchSupport: true });
+                }
+            }
+
+            closeDeviceModal();
+            if (editor) {
+                setTimeout(() => editor.layout(), 100);
+            }
+        }
+
+        function openDeviceModal() {
+            const detected = detectDevice() === 'mobile' ? "Mobil / Tablet Cihaz" : "Masaüstü (PC)";
+            document.getElementById('detected-device-info').innerText = `Algılanan Cihaz: ${detected}. Lütfen kullanmak istediğiniz arayüz modunu seçin:`;
+            document.getElementById('device-modal-overlay').style.display = 'flex';
+        }
+
+        function closeDeviceModal() {
+            document.getElementById('device-modal-overlay').style.display = 'none';
+        }
+
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            const isMobile = detectDevice() === 'mobile';
+
+            monaco.languages.registerCompletionItemProvider('python', {
+                provideCompletionItems: function(model, position) {
+                    const suggestions = [
+                        { label: 'print', kind: monaco.languages.CompletionItemKind.Function, insertText: 'print(${1})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Ekrana çıktı yazdırır.' },
+                        { label: 'def', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'def ${1:func_name}(${2:args}):\n\t${3:pass}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Fonksiyon tanımlar.' },
+                        { label: 'for', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'for ${1:item} in ${2:iterable}:\n\t${3:pass}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'For döngüsü oluşturur.' },
+                        { label: 'if', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'if ${1:condition}:\n\t${2:pass}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Koşul bloğu oluşturur.' }
+                    ];
+                    return { suggestions: suggestions };
+                }
+            });
+            
+            editor = monaco.editor.create(document.getElementById('monaco-editor-wrapper'), {
+                value: files[currentFile],
+                language: 'python',
+                theme: 'vs-dark',
+                automaticLayout: true,
+                fontSize: isMobile ? 12 : 14,
+                minimap: { enabled: !isMobile },
+                scrollBeyondLastLine: false,
+                touchSupport: true,
+                fontFamily: "'Consolas', 'Courier New', monospace"
+            });
+
+            editor.onDidChangeCursorPosition(e => {
+                document.getElementById('cursor-pos').innerText = `Satır ${e.position.lineNumber}, Sütun ${e.position.column}`;
+            });
+
+            editor.onDidChangeModelContent(() => {
+                files[currentFile] = editor.getValue();
+            });
+        });
+
+        async function initEngine() {
+            try {
+                pyodideInstance = await loadPyodide();
+                document.getElementById('engine-status-dot').classList.add('ready');
+                document.getElementById('engine-status-text').innerText = "Hazır";
+                document.getElementById('output-console').innerText = "[Sistem]: Python derleyici motoru hazır. Kodu çalıştırmak için 'Çalıştır'a basın.";
+            } catch (err) {
+                document.getElementById('engine-status-text').innerText = "Hata";
+                document.getElementById('output-console').innerText = "[Hata]: Motor yüklenemedi -> " + err.message;
+            }
+        }
+
+        function toggleSidebar() {
+            closeAllMenus();
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+            if (editor) {
+                setTimeout(() => editor.layout(), 100);
+            }
+        }
+
+        function renderExplorer() {
+            const fileTree = document.getElementById('file-tree');
+            const tabsHeader = document.getElementById('tabs-header');
+            
+            fileTree.innerHTML = '';
+            tabsHeader.innerHTML = '';
+
+            Object.keys(files).forEach(filename => {
+                const li = document.createElement('li');
+                li.className = `file-item ${filename === currentFile ? 'active' : ''}`;
+                li.innerHTML = `
+                    <span onclick="switchFile('${filename}')">📄 ${filename}</span>
+                    <span class="file-delete-btn" onclick="deleteFile(event, '${filename}')">✕</span>
+                `;
+                fileTree.appendChild(li);
+
+                if (filename === currentFile) {
+                    const tab = document.createElement('div');
+                    tab.className = 'tab active';
+                    tab.innerHTML = `
+                        <span>${filename}</span>
+                        <span class="tab-close" onclick="closeCurrentTab()">✕</span>
+                    `;
+                    tabsHeader.appendChild(tab);
+                }
+            });
+        }
+
+        function switchFile(filename) {
+            currentFile = filename;
+            if (editor) {
+                editor.setValue(files[filename]);
+            }
+            renderExplorer();
+            
+            if (document.body.classList.contains('mobile-mode')) {
+                document.getElementById('sidebar').classList.add('hidden');
+            }
+        }
+
+        function analyzePythonError(errorMsg) {
+            let advice = "\n--- 🔍 OTO-DEBUG (HATA ANALİZİ) ---\n";
+            if (errorMsg.includes("NameError")) {
+                advice += "• Olası Neden: Tanımlanmamış bir değişken veya fonksiyon adı kullanılıyor.";
+            } else if (errorMsg.includes("SyntaxError") || errorMsg.includes("IndentationError")) {
+                advice += "• Olası Neden: Yazım kuralı (syntax) veya girinti hatası.";
+            } else {
+                advice += "• Genel İpucu: Hata mesajındaki satır numarasını inceleyin.";
+            }
+            return advice;
+        }
+
+        async function runPythonCode() {
+            closeAllMenus();
+            const outputConsole = document.getElementById('output-console');
+
+            if (!pyodideInstance) {
+                outputConsole.innerText = "[Sistem]: Python motoru hazırlanıyor, lütfen bekleyin...";
+                return;
+            }
+
+            outputConsole.innerText = `[Çalıştırılıyor: ${currentFile}...]\n----------------------------------------\n`;
+
+            try {
+                pyodideInstance.runPython(`
+                    import sys
+                    import io
+                    sys.stdout = io.StringIO()
+                    sys.stderr = io.StringIO()
+                `);
+
+                await pyodideInstance.runPythonAsync(editor.getValue());
+                const stdout = pyodideInstance.runPython("sys.stdout.getvalue()");
+                const stderr = pyodideInstance.runPython("sys.stderr.getvalue()");
+
+                if (stderr) {
+                    outputConsole.innerText += stderr + analyzePythonError(stderr) + "\n----------------------------------------\n[İşlem Hata ile Tamamlandı]";
+                } else {
+                    outputConsole.innerText += stdout + "\n----------------------------------------\n[İşlem Başarıyla Tamamlandı]";
+                }
+            } catch (err) {
+                let errStr = err.message;
+                outputConsole.innerText += errStr + analyzePythonError(errStr) + "\n----------------------------------------\n[İşlem Hata ile Tamamlandı]";
+            }
+        }
+
+        function toggleMenu(e, id, btnElement) {
+            e.stopPropagation();
+            const target = document.getElementById(id);
+            const isVisible = target.classList.contains('show');
+            
+            closeAllMenus();
+
+            if (!isVisible) {
+                const rect = btnElement.getBoundingClientRect();
+                target.style.top = (rect.bottom + 2) + 'px';
+                target.style.left = rect.left + 'px';
+                target.classList.add('show');
+            }
+        }
+
+        function closeAllMenus() {
+            document.querySelectorAll('.dropdown').forEach(m => {
+                m.classList.remove('show');
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                closeAllMenus();
+            }
+        });
+
+        function clearConsole() {
+            closeAllMenus();
+            document.getElementById('output-console').innerText = "";
+        }
+
+        function downloadCurrentFile() {
+            closeAllMenus();
+            const blob = new Blob([editor.getValue()], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = currentFile;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function promptNewFile() {
+            closeAllMenus();
+            showModal("Yeni Dosya Adı", "app.py", (name) => {
+                if (name) {
+                    if (!name.endsWith('.py')) name += '.py';
+                    files[name] = '# Yeni Dosya\n';
+                    switchFile(name);
+                }
+            });
+        }
+
+        function closeCurrentTab() {
+            closeAllMenus();
+            delete files[currentFile];
+            const remaining = Object.keys(files);
+            if (remaining.length > 0) switchFile(remaining[0]);
+            else {
+                files['main.py'] = '';
+                switchFile('main.py');
+            }
+        }
+
+        function deleteFile(e, filename) {
+            e.stopPropagation();
+            if (confirm(`${filename} dosyasını silmek istediğinize emin misiniz?`)) {
+                delete files[filename];
+                const remaining = Object.keys(files);
+                if (remaining.length > 0) switchFile(remaining[0]);
+                else {
+                    files['main.py'] = '';
+                    switchFile('main.py');
+                }
+            }
+        }
+
+        function showModal(title, placeholder, onConfirm) {
+            const overlay = document.getElementById('modal-overlay');
+            const input = document.getElementById('modal-input');
+            document.getElementById('modal-title').innerText = title;
+            input.placeholder = placeholder;
+            input.value = '';
+            overlay.style.display = 'flex';
+            input.focus();
+
+            document.getElementById('modal-confirm-btn').onclick = () => {
+                onConfirm(input.value);
+                closeModal();
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.shiftKey && e.key === 'Enter') {
+                e.preventDefault();
+                runPythonCode();
+            }
+            if (e.ctrlKey && (e.key === 'b' || e.key === 'B')) {
+                e.preventDefault();
+                toggleSidebar();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            closeAllMenus();
+            if (selectedMode === 'auto') {
+                applyDeviceMode('auto');
+            } else if (editor) {
+                editor.layout();
+            }
+        });
+
+        window.onload = () => {
+            renderExplorer();
+            initEngine();
+            openDeviceModal();
+        };
+    </script>
+</body>
+</html>
