@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>North IDE — Cross-Platform Hybrid Edition</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -564,7 +565,7 @@
 
             <div class="status-badge" title="Python Motoru Durumu">
                 <div class="status-dot" id="engine-status-dot"></div>
-                <span id="engine-status-text">Başlatılmadı</span>
+                <span id="engine-status-text">Yükleniyor</span>
             </div>
             <button class="btn-run-main" onclick="runPythonCode()">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -596,7 +597,7 @@
                     </div>
                     <button class="btn-clear-output" onclick="clearConsole()">Temizle</button>
                 </div>
-                <div class="panel-content" id="output-console">North IDE hazır. Python motoru ilk çalıştırmada yüklenecektir.</div>
+                <div class="panel-content" id="output-console">Sistem hazırlanıyor...</div>
             </div>
         </div>
     </div>
@@ -732,33 +733,14 @@
         });
 
         async function initEngine() {
-            if (pyodideInstance) return pyodideInstance;
-
-            const outputConsole = document.getElementById('output-console');
-            const statusText = document.getElementById('engine-status-text');
-            const statusDot = document.getElementById('engine-status-dot');
-
-            statusText.innerText = "Yükleniyor";
-            outputConsole.innerText = "[Sistem]: Python motoru ilk kez yükleniyor...";
-
             try {
-                await new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
-                    script.onload = resolve;
-                    script.onerror = () => reject(new Error("Pyodide CDN yüklenemedi."));
-                    document.head.appendChild(script);
-                });
-
                 pyodideInstance = await loadPyodide();
-                statusDot.classList.add('ready');
-                statusText.innerText = "Hazır";
-                outputConsole.innerText = "[Sistem]: Python motoru hazır. Kodu çalıştırabilirsiniz.";
-                return pyodideInstance;
+                document.getElementById('engine-status-dot').classList.add('ready');
+                document.getElementById('engine-status-text').innerText = "Hazır";
+                document.getElementById('output-console').innerText = "[Sistem]: Python derleyici motoru hazır. Kodu çalıştırmak için 'Çalıştır'a basın.";
             } catch (err) {
-                statusText.innerText = "Hata";
-                outputConsole.innerText = "[Hata]: Python motoru yüklenemedi -> " + err.message;
-                throw err;
+                document.getElementById('engine-status-text').innerText = "Hata";
+                document.getElementById('output-console').innerText = "[Hata]: Motor yüklenemedi -> " + err.message;
             }
         }
 
@@ -828,11 +810,8 @@
             const outputConsole = document.getElementById('output-console');
 
             if (!pyodideInstance) {
-                try {
-                    await initEngine();
-                } catch (err) {
-                    return;
-                }
+                outputConsole.innerText = "[Sistem]: Python motoru hazırlanıyor, lütfen bekleyin...";
+                return;
             }
 
             outputConsole.innerText = `[Çalıştırılıyor: ${currentFile}...]\n----------------------------------------\n`;
@@ -978,6 +957,7 @@
 
         window.onload = () => {
             renderExplorer();
+            initEngine();
             openDeviceModal();
         };
     </script>
