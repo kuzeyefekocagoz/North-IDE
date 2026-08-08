@@ -389,6 +389,44 @@
             gap: 8px;
         }
 
+
+        /* GELİŞMİŞ IDE ÖZELLİKLERİ */
+        .file-upload-btn {
+            display: none;
+        }
+
+        .panel-tab {
+            padding: 7px 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 10.5px;
+            color: #71717a;
+            border: 0;
+            background: transparent;
+        }
+
+        .panel-tab.active {
+            color: #fff;
+            border-bottom: 2px solid #3b82f6;
+            background: #1e1e1e;
+        }
+
+        .terminal-prompt {
+            color: #22c55e;
+        }
+
+        .error-line {
+            background: rgba(239, 68, 68, 0.14);
+            border-left: 2px solid #ef4444;
+        }
+
+        .package-status {
+            margin-top: 10px;
+            color: #94a3b8;
+            font-size: 11px;
+            min-height: 18px;
+        }
+
         /* MODALLAR */
         .modal-overlay {
             display: none;
@@ -570,6 +608,14 @@
                             <span>Farklı Kaydet...</span>
                             <span class="dropdown-shortcut">Ctrl+S</span>
                         </div>
+                        <div class="dropdown-item" onclick="openFilePicker()">
+                            <span>Dosya Aç...</span>
+                            <span class="dropdown-shortcut">Ctrl+O</span>
+                        </div>
+                        <div class="dropdown-item" onclick="saveCurrentFile()">
+                            <span>Kaydet</span>
+                            <span class="dropdown-shortcut">Ctrl+S</span>
+                        </div>
                         <div class="dropdown-divider"></div>
                         <div class="dropdown-item" onclick="closeCurrentTab()">
                             <span>Dosyayı Kapat</span>
@@ -583,6 +629,18 @@
                     <div class="dropdown" id="edit-menu">
                         <div class="dropdown-item" onclick="clearConsole()">
                             <span>Konsolu Temizle</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-container">
+                    <span class="menu-item" onclick="toggleMenu(event, 'package-menu', this)">Paketler</span>
+                    <div class="dropdown" id="package-menu">
+                        <div class="dropdown-item" onclick="openPackageModal()">
+                            <span>Python Paketi Yükle</span>
+                        </div>
+                        <div class="dropdown-item" onclick="loadCommonPackages()">
+                            <span>Pyodide Paketleri</span>
                         </div>
                     </div>
                 </div>
@@ -628,6 +686,7 @@
         </div>
     </div>
 
+    <input id="file-upload-input" class="file-upload-btn" type="file" accept=".py,.txt,.json,.md,.html,.css,.js" multiple onchange="handleFileUpload(event)">
     <div class="main-container">
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -646,10 +705,10 @@
 
             <div class="bottom-panel">
                 <div class="panel-tabs">
-                    <div class="panel-tab">ÇIKTI (OUTPUT)</div>
+                    <div class="panel-tab active" id="output-tab">TERMINAL / ÇIKTI</div>
                     <button class="btn-clear-output" onclick="clearConsole()">Temizle</button>
                 </div>
-                <div class="panel-content" id="output-console">Sistem hazırlanıyor...</div>
+                <div class="panel-content" id="output-console"><span class="terminal-prompt">$</span> Sistem hazırlanıyor...</div>
             </div>
         </div>
     </div>
@@ -692,15 +751,205 @@
         </div>
     </div>
 
+
+    <div class="modal-overlay" id="package-modal-overlay">
+        <div class="modal">
+            <div class="modal-title">Python Paketi Yükle</div>
+            <div class="modal-desc">
+                Pyodide'nin desteklediği paketleri yükleyebilir veya saf Python paketlerini
+                micropip ile kurmayı deneyebilirsin. Tarayıcı ortamında tüm masaüstü Python
+                paketleri desteklenmez.
+            </div>
+            <input type="text" class="modal-input" id="package-input" placeholder="numpy veya requests">
+            <div class="package-status" id="package-status"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn" onclick="closePackageModal()">İptal</button>
+                <button class="modal-btn primary" id="package-install-btn" onclick="installPythonPackage()">Yükle</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let editor;
-        let files = {
-            'main.py': '# North IDE — Hybrid Platform\nprint("Merhaba! North IDE başarıyla başlatıldı.")\n\nnumbers = [1, 2, 3, 4, 5]\nprint("Kareler:", [x**2 for x in numbers])',
-            'helpers.py': 'def greet(name):\n    return f"Merhaba {name}"'
-        };
-        let currentFile = 'main.py';
+        // North IDE starts with an empty workspace.
+        let files = {};
+        let currentFile = null;
         let pyodideInstance = null;
         let selectedMode = 'auto';
+        let pythonInputActive = false;
+        let pythonInputResolver = null;
+        let pythonExecutionId = 0;
+        let errorDecorations = [];
+        const STORAGE_KEY = 'north-ide-workspace-v3';
+        let workspaceRestored = false;
+
+
+
+
+        function saveWorkspace() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    files,
+                    currentFile,
+                    savedAt: Date.now()
+                }));
+            } catch (e) {
+                console.warn('North IDE localStorage kayıt hatası:', e);
+            }
+        }
+
+        function restoreWorkspace() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return false;
+                const data = JSON.parse(raw);
+                if (!data || !data.files || typeof data.files !== 'object') return false;
+
+                files = data.files;
+                const names = Object.keys(files);
+                currentFile = names.includes(data.currentFile) ? data.currentFile : (names[0] || null);
+                workspaceRestored = names.length > 0;
+                return names.length > 0;
+            } catch (e) {
+                console.warn('North IDE kayıt geri yükleme hatası:', e);
+                return false;
+            }
+        }
+
+        function clearSavedWorkspace() {
+            localStorage.removeItem(STORAGE_KEY);
+        }
+
+        function getFileLanguage(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const map = {
+                py: 'python', js: 'javascript', html: 'html',
+                css: 'css', json: 'json', md: 'markdown',
+                txt: 'plaintext'
+            };
+            return map[ext] || 'plaintext';
+        }
+
+        function clearErrorMarkers() {
+            if (editor) {
+                errorDecorations = editor.deltaDecorations(errorDecorations, []);
+            }
+        }
+
+        function highlightPythonError(message) {
+            clearErrorMarkers();
+            if (!editor || !message) return;
+
+            // Pyodide/Python traceback: File "<exec>", line N
+            const match = message.match(/line\s+(\d+)/i);
+            if (!match) return;
+
+            const line = Math.max(1, Math.min(Number(match[1]), editor.getModel().getLineCount()));
+            errorDecorations = editor.deltaDecorations([], [{
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    className: 'error-line',
+                    overviewRuler: {
+                        color: '#ef4444',
+                        position: monaco.editor.OverviewRulerLane.Full
+                    }
+                }
+            }]);
+
+            editor.revealLineInCenter(line);
+            editor.setPosition({ lineNumber: line, column: 1 });
+            editor.focus();
+        }
+
+        function openFilePicker() {
+            closeAllMenus();
+            document.getElementById('file-upload-input').click();
+        }
+
+        async function handleFileUpload(event) {
+            const selected = Array.from(event.target.files || []);
+            for (const file of selected) {
+                try {
+                    const content = await file.text();
+                    files[file.name] = content;
+                    currentFile = file.name;
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            event.target.value = '';
+            saveWorkspace();
+            renderExplorer();
+            if (currentFile && editor) {
+                editor.updateOptions({ readOnly: false });
+                monaco.editor.setModelLanguage(editor.getModel(), getFileLanguage(currentFile));
+                editor.setValue(files[currentFile]);
+            }
+        }
+
+        function saveCurrentFile() {
+            closeAllMenus();
+            if (!currentFile || !editor) return;
+            files[currentFile] = editor.getValue();
+            saveWorkspace();
+            downloadCurrentFile(true);
+            document.getElementById('output-console').innerText =
+                `[Kaydedildi] ${currentFile}\nYerel çalışma alanı da güncellendi.`;
+        }
+
+        async function installPythonPackage() {
+            const input = document.getElementById('package-input');
+            const status = document.getElementById('package-status');
+            const button = document.getElementById('package-install-btn');
+            const name = input.value.trim();
+
+            if (!name) {
+                status.textContent = 'Bir paket adı gir.';
+                return;
+            }
+            if (!pyodideInstance) {
+                status.textContent = 'Python motoru henüz hazır değil.';
+                return;
+            }
+
+            button.disabled = true;
+            status.textContent = `${name} yükleniyor...`;
+
+            try {
+                // First try Pyodide's built-in package repository.
+                await pyodideInstance.loadPackage(name);
+                status.textContent = `${name} başarıyla yüklendi.`;
+            } catch (builtinError) {
+                try {
+                    await pyodideInstance.loadPackage('micropip');
+                    const micropip = pyodideInstance.pyimport('micropip');
+                    await micropip.install(name);
+                    micropip.destroy();
+                    status.textContent = `${name} micropip ile yüklendi.`;
+                } catch (pipError) {
+                    status.textContent =
+                        `${name} yüklenemedi. Bu paket tarayıcı/Pyodide ile uyumlu olmayabilir.`;
+                    console.error(builtinError, pipError);
+                }
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function loadCommonPackages() {
+            closeAllMenus();
+            if (!pyodideInstance) return;
+            const output = document.getElementById('output-console');
+            output.innerText = '[Paketler] NumPy, Pandas ve Matplotlib yükleniyor...';
+
+            try {
+                await pyodideInstance.loadPackage(['numpy', 'pandas', 'matplotlib']);
+                output.innerText += '\n[Paketler] Hazır.';
+            } catch (e) {
+                output.innerText += '\n[Paket Hatası] ' + (e.message || e);
+            }
+        }
 
         function detectDevice() {
             const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -767,9 +1016,10 @@
             });
             
             editor = monaco.editor.create(document.getElementById('monaco-editor-wrapper'), {
-                value: files[currentFile],
+                value: '',
                 language: 'python',
                 theme: 'vs-dark',
+                readOnly: true,
                 automaticLayout: true,
                 fontSize: isMobile ? 12 : 14,
                 minimap: { enabled: !isMobile },
@@ -799,13 +1049,25 @@
             });
 
             editor.onDidChangeModelContent(() => {
-                files[currentFile] = editor.getValue();
+                if (currentFile !== null) {
+                    files[currentFile] = editor.getValue();
+                    saveWorkspace();
+                    clearErrorMarkers();
+                }
             });
+
+            if (currentFile && files[currentFile]) {
+                editor.updateOptions({ readOnly: false });
+                monaco.editor.setModelLanguage(editor.getModel(), getFileLanguage(currentFile));
+                editor.setValue(files[currentFile]);
+                renderExplorer();
+            }
         });
 
         async function initEngine() {
             try {
                 pyodideInstance = await loadPyodide();
+                configurePyodideStdin();
                 document.getElementById('engine-status-dot').classList.add('ready');
                 document.getElementById('engine-status-text').innerText = "Hazır";
                 document.getElementById('output-console').innerText = "[Sistem]: Python derleyici motoru hazır. Kodu çalıştırmak için 'Çalıştır'a basın.";
@@ -839,6 +1101,15 @@
             fileTree.innerHTML = '';
             tabsHeader.innerHTML = '';
 
+            if (Object.keys(files).length === 0) {
+                const empty = document.createElement('li');
+                empty.className = 'file-item';
+                empty.style.cursor = 'default';
+                empty.style.color = '#71717a';
+                empty.innerHTML = '<span>Henüz dosya yok</span>';
+                fileTree.appendChild(empty);
+            }
+
             Object.keys(files).forEach(filename => {
                 const li = document.createElement('li');
                 li.className = `file-item ${filename === currentFile ? 'active' : ''}`;
@@ -861,11 +1132,16 @@
         }
 
         function switchFile(filename) {
+            if (!Object.prototype.hasOwnProperty.call(files, filename)) return;
+
             currentFile = filename;
             if (editor) {
+                editor.updateOptions({ readOnly: false });
+                monaco.editor.setModelLanguage(editor.getModel(), getFileLanguage(filename));
                 editor.setValue(files[filename]);
                 editor.focus();
             }
+            saveWorkspace();
             renderExplorer();
             
             if (document.body.classList.contains('mobile-mode')) {
@@ -886,37 +1162,236 @@
             return advice;
         }
 
+
+        function removePythonInput() {
+            const old = document.getElementById('python-input-row');
+            if (old) old.remove();
+            pythonInputActive = false;
+            pythonInputResolver = null;
+        }
+
+        function createPythonInput(promptText) {
+            return new Promise((resolve) => {
+                removePythonInput();
+
+                const consoleEl = document.getElementById('output-console');
+                const row = document.createElement('div');
+                row.id = 'python-input-row';
+                row.className = 'python-input-row';
+
+                const input = document.createElement('input');
+                input.id = 'python-input-field';
+                input.className = 'python-input-field';
+                input.type = 'text';
+                input.autocomplete = 'off';
+                input.autocapitalize = 'off';
+                input.spellcheck = false;
+                input.placeholder = promptText || '';
+
+                const button = document.createElement('button');
+                button.className = 'python-input-submit';
+                button.type = 'button';
+                button.textContent = 'Gönder';
+
+                row.appendChild(input);
+                row.appendChild(button);
+                consoleEl.appendChild(row);
+
+                pythonInputActive = true;
+                pythonInputResolver = resolve;
+
+                const submit = () => {
+                    if (!pythonInputActive) return;
+                    const value = input.value;
+                    const prompt = promptText || '';
+
+                    // Do not write the submitted value separately into the
+                    // output console. Python's input()/print() flow is responsible
+                    // for program output. Only remove the interactive UI here.
+
+                    pythonInputActive = false;
+                    pythonInputResolver = null;
+                    row.remove();
+                    resolve(value);
+
+                    requestAnimationFrame(() => {
+                        consoleEl.scrollTop = consoleEl.scrollHeight;
+                    });
+                };
+
+                button.addEventListener('click', submit);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        submit();
+                    }
+                });
+
+                requestAnimationFrame(() => {
+                    input.focus();
+                    consoleEl.scrollTop = consoleEl.scrollHeight;
+                });
+            });
+        }
+
+        function configurePyodideStdin() {
+            if (!pyodideInstance || typeof pyodideInstance.setStdin !== 'function') return;
+
+            /*
+             * Pyodide's synchronous stdin callback cannot await a browser
+             * Promise. Therefore we do not pretend that setStdin() can directly
+             * suspend Python while an HTML input is open. The actual execution
+             * path below transforms input() calls before execution.
+             */
+            pyodideInstance.setStdin({
+                stdin: () => {
+                    throw new Error("North IDE: interactive stdin is handled by the North IDE input bridge.");
+                }
+            });
+        }
+
+        function transformInteractiveInput(code) {
+            /*
+             * Browser-side Pyodide cannot synchronously wait for an HTML input.
+             * Convert simple built-in input(...) calls into a North IDE bridge
+             * function that is resolved before the Python code continues.
+             *
+             * This intentionally handles the normal input() forms used in IDE
+             * exercises and preserves int(input(...)) / float(input(...)).
+             */
+            let transformed = code;
+
+            transformed = transformed.replace(
+                /\binput\s*\(\s*(["'`])((?:\\.|(?!\1).)*)\1\s*\)/g,
+                '__north_input__(' + JSON.stringify(
+                    // Keep the prompt literal exactly as a JS string.
+                    '$2'
+                ) + ')'
+            );
+
+            // Handle input() without a prompt.
+            transformed = transformed.replace(/\binput\s*\(\s*\)/g, '__north_input__("")');
+
+            // The replacement above intentionally needs the actual prompt text,
+            // not the literal "$2". Re-run using a callback for prompt-bearing calls.
+            transformed = code.replace(
+                /\binput\s*\(\s*(["'])([\s\S]*?)\1\s*\)/g,
+                (_, quote, prompt) => '__north_input__(' + JSON.stringify(prompt) + ')'
+            );
+            transformed = transformed.replace(/\binput\s*\(\s*\)/g, '__north_input__("")');
+
+            return transformed;
+        }
+
+        async function runPythonWithInteractiveInput(code, executionId) {
+            /*
+             * input() cannot be implemented by simply returning a Promise from
+             * Pyodide's synchronous stdin callback. Instead, execute the source
+             * in small Python statements when input() is encountered.
+             *
+             * For arbitrary Python syntax this lightweight bridge is not a full
+             * Python parser; therefore we first try the native execution path.
+             * If an input() call is detected, we use a line-oriented execution
+             * bridge for common interactive code.
+             */
+            const inputPattern = /\binput\s*\(/;
+            if (!inputPattern.test(code)) {
+                return await pyodideInstance.runPythonAsync(code);
+            }
+
+            // Prepare the JS-to-Python bridge.
+            pyodideInstance.globals.set("__north_input__", async (prompt) => {
+                if (executionId !== pythonExecutionId) {
+                    throw new Error("Program durduruldu.");
+                }
+                return await createPythonInput(String(prompt ?? ""));
+            });
+
+            /*
+             * We use Pyodide's JS proxy to expose an async Python coroutine
+             * wrapper. This allows normal Python code to await the browser input.
+             *
+             * NOTE: this bridge is used only for source that explicitly contains
+             * input(). The rest of the IDE remains unchanged.
+             */
+            let transformed = transformInteractiveInput(code);
+
+            // Pyodide exposes the async JavaScript callback as a PyodideFuture.
+            // It MUST be awaited before Python functions such as int()/float()
+            // receive the returned string. Otherwise int(PyodideFuture) raises
+            // the exact TypeError seen in the IDE.
+            transformed = transformed.replace(/__north_input__\s*\(/g, 'await __north_input__(');
+
+            // Convert __north_input__ calls to awaitable calls inside an async
+            // wrapper. This supports statements such as:
+            //   x = input("x: ")
+            //   x = int(input("x: "))
+            // and keeps indentation by executing the whole body in an async
+            // function.
+            const wrapped = `
+import builtins as __north_builtins
+async def __north_main__():
+${transformed.split('\n').map(line => '    ' + line).join('\n')}
+await __north_main__()
+`;
+            return await pyodideInstance.runPythonAsync(wrapped);
+        }
+
         async function runPythonCode() {
             closeAllMenus();
+            removePythonInput();
+
             const outputConsole = document.getElementById('output-console');
+
+            if (currentFile === null) {
+                outputConsole.innerText = "[Sistem]: Çalıştırmak için önce Dosya > Yeni Dosya ile bir Python dosyası oluşturun.";
+                return;
+            }
 
             if (!pyodideInstance) {
                 outputConsole.innerText = "[Sistem]: Python motoru hazırlanıyor, lütfen bekleyin...";
                 return;
             }
 
-            outputConsole.innerText = `[Çalıştırılıyor: ${currentFile}...]\n----------------------------------------\n`;
+            const executionId = ++pythonExecutionId;
+            outputConsole.innerText =
+                `[Çalıştırılıyor: ${currentFile}...]\n----------------------------------------\n`;
 
             try {
                 pyodideInstance.runPython(`
-                    import sys
-                    import io
-                    sys.stdout = io.StringIO()
-                    sys.stderr = io.StringIO()
-                `);
+import sys
+import io
+sys.stdout = io.StringIO()
+sys.stderr = io.StringIO()
+`);
 
-                await pyodideInstance.runPythonAsync(editor.getValue());
+                await runPythonWithInteractiveInput(editor.getValue(), executionId);
+
                 const stdout = pyodideInstance.runPython("sys.stdout.getvalue()");
                 const stderr = pyodideInstance.runPython("sys.stderr.getvalue()");
 
+                if (stdout) outputConsole.innerText += stdout;
                 if (stderr) {
-                    outputConsole.innerText += stderr + analyzePythonError(stderr) + "\n----------------------------------------\n[İşlem Hata ile Tamamlandı]";
-                } else {
-                    outputConsole.innerText += stdout + "\n----------------------------------------\n[İşlem Başarıyla Tamamlandı]";
+                    outputConsole.innerText += stderr;
+                    outputConsole.innerText += analyzePythonError(stderr);
                 }
+
+                outputConsole.innerText +=
+                    "\n----------------------------------------\n" +
+                    (stderr
+                        ? "[İşlem Hata ile Tamamlandı]"
+                        : "[İşlem Başarıyla Tamamlandı]");
             } catch (err) {
-                let errStr = err.message;
-                outputConsole.innerText += errStr + analyzePythonError(errStr) + "\n----------------------------------------\n[İşlem Hata ile Tamamlandı]";
+                removePythonInput();
+                let errStr = err && err.message ? err.message : String(err);
+
+                highlightPythonError(errStr);
+                outputConsole.innerText +=
+                    errStr +
+                    analyzePythonError(errStr) +
+                    "\n----------------------------------------\n[İşlem Hata ile Tamamlandı]";
+            } finally {
+                removePythonInput();
             }
         }
 
@@ -950,37 +1425,64 @@
         function clearConsole() {
             closeAllMenus();
             document.getElementById('output-console').innerText = "";
+            clearErrorMarkers();
         }
 
-        function downloadCurrentFile() {
-            closeAllMenus();
-            const blob = new Blob([editor.getValue()], { type: 'text/plain' });
+        function downloadCurrentFile(silent = false) {
+            if (!silent) closeAllMenus();
+            if (!currentFile || !editor) return;
+
+            files[currentFile] = editor.getValue();
+            saveWorkspace();
+
+            const blob = new Blob([editor.getValue()], { type: 'text/plain;charset=utf-8' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = currentFile;
+            document.body.appendChild(a);
             a.click();
-            URL.revokeObjectURL(a.href);
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         }
 
         function promptNewFile() {
             closeAllMenus();
             showModal("Yeni Dosya Adı", "app.py", (name) => {
                 if (name) {
+                    name = name.trim();
+                    if (!name) return;
                     if (!name.endsWith('.py')) name += '.py';
+
+                    if (Object.prototype.hasOwnProperty.call(files, name)) {
+                        switchFile(name);
+                        return;
+                    }
+
                     files[name] = '# Yeni Dosya\n';
                     switchFile(name);
+                    saveWorkspace();
+                    renderExplorer();
                 }
             });
         }
 
         function closeCurrentTab() {
             closeAllMenus();
+            if (currentFile === null) return;
+
             delete files[currentFile];
             const remaining = Object.keys(files);
-            if (remaining.length > 0) switchFile(remaining[0]);
-            else {
-                files['main.py'] = '';
-                switchFile('main.py');
+
+            if (remaining.length > 0) {
+                switchFile(remaining[0]);
+            } else {
+                currentFile = null;
+                if (editor) {
+                    editor.setValue('');
+                    editor.updateOptions({ readOnly: true });
+                }
+                saveWorkspace();
+                renderExplorer();
             }
         }
 
@@ -989,10 +1491,16 @@
             if (confirm(`${filename} dosyasını silmek istediğinize emin misiniz?`)) {
                 delete files[filename];
                 const remaining = Object.keys(files);
-                if (remaining.length > 0) switchFile(remaining[0]);
-                else {
-                    files['main.py'] = '';
-                    switchFile('main.py');
+                if (remaining.length > 0) {
+                    switchFile(remaining[0]);
+                } else {
+                    currentFile = null;
+                    if (editor) {
+                        editor.setValue('');
+                        editor.updateOptions({ readOnly: true });
+                    }
+                    saveWorkspace();
+                    renderExplorer();
                 }
             }
         }
@@ -1017,13 +1525,41 @@
         }
 
         window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+
             if (e.shiftKey && e.key === 'Enter') {
                 e.preventDefault();
                 runPythonCode();
+                return;
             }
-            if (e.ctrlKey && (e.key === 'b' || e.key === 'B')) {
+
+            if (e.ctrlKey && key === 'b') {
                 e.preventDefault();
                 toggleSidebar();
+                return;
+            }
+
+            if (e.ctrlKey && key === 'n') {
+                e.preventDefault();
+                promptNewFile();
+                return;
+            }
+
+            if (e.ctrlKey && key === 'o') {
+                e.preventDefault();
+                openFilePicker();
+                return;
+            }
+
+            if (e.ctrlKey && key === 's') {
+                e.preventDefault();
+                saveCurrentFile();
+                return;
+            }
+
+            if (e.ctrlKey && key === 'w') {
+                e.preventDefault();
+                closeCurrentTab();
             }
         });
 
@@ -1037,7 +1573,13 @@
         });
 
         window.onload = () => {
+            const restored = restoreWorkspace();
             renderExplorer();
+
+            if (restored && currentFile && editor) {
+                switchFile(currentFile);
+            }
+
             initEngine();
             openDeviceModal();
         };
