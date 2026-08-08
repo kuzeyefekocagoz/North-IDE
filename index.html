@@ -29,7 +29,7 @@
 
         /* 1. ÜST BAŞLIK & MENÜ */
         .title-bar {
-            min-height: 40px;
+            min-height: 44px;
             background-color: #181818;
             display: flex;
             align-items: center;
@@ -42,24 +42,37 @@
         .title-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .hamburger-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: #3b82f6;
+            cursor: pointer;
+            padding: 4px;
+            align-items: center;
+            justify-content: center;
         }
 
         .app-brand {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             font-weight: 700;
             color: #3b82f6;
             font-size: 13px;
             letter-spacing: 0.5px;
-            padding-right: 4px;
+            padding-right: 2px;
+            cursor: pointer;
         }
 
         .menu-bar {
             display: flex;
-            gap: 2px;
+            gap: 1px;
         }
 
         .menu-container {
@@ -67,11 +80,11 @@
         }
 
         .menu-item {
-            padding: 6px 10px;
+            padding: 6px 8px;
             cursor: pointer;
             border-radius: 4px;
             color: #aaaaaa;
-            font-size: 12px;
+            font-size: 11.5px;
             transition: all 0.15s ease;
             display: inline-block;
         }
@@ -81,14 +94,14 @@
             color: #ffffff;
         }
 
-        /* Dropdown Menüler (Body içinde mutlak konumlanacak) */
+        /* Dropdown Menüler */
         .dropdown {
             display: none;
             position: fixed;
             background-color: #252526;
             border: 1px solid #3c3c3c;
             box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-            min-width: 220px;
+            min-width: 200px;
             z-index: 99999;
             padding: 6px 0;
             border-radius: 6px;
@@ -128,67 +141,59 @@
         .title-right {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .device-selector-btn {
             background: #27272a;
             border: 1px solid #3f3f46;
             color: #38bdf8;
-            padding: 4px 8px;
+            padding: 4px 6px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 5px;
-        }
-
-        .device-selector-btn:hover {
-            background: #3f3f46;
+            gap: 4px;
         }
 
         .status-badge {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 11px;
+            gap: 5px;
+            font-size: 10.5px;
             background: #252526;
-            padding: 4px 8px;
+            padding: 4px 6px;
             border-radius: 12px;
             border: 1px solid #333333;
             color: #94a3b8;
         }
 
         .status-dot {
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background-color: #eab308;
         }
 
         .status-dot.ready {
             background-color: #22c55e;
-            box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+            box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
         }
 
         .btn-run-main {
             background-color: #16a34a;
             color: white;
             border: none;
-            padding: 6px 14px;
+            padding: 5px 10px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
             font-size: 11px;
             display: flex;
             align-items: center;
-            gap: 5px;
-        }
-
-        .btn-run-main:active {
-            background-color: #15803d;
+            gap: 4px;
         }
 
         /* 2. GÖVDE VE SIDEBAR */
@@ -205,7 +210,7 @@
             border-right: 1px solid #2b2b2b;
             display: flex;
             flex-direction: column;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
             z-index: 50;
         }
 
@@ -269,7 +274,7 @@
             padding: 4px 8px;
         }
 
-        /* 3. EDİTÖR VE MONACO WRAPPER */
+        /* 3. EDİTÖR VE SEKMELER */
         .editor-container {
             flex: 1;
             display: flex;
@@ -287,12 +292,12 @@
         }
 
         .tab {
-            padding: 10px 14px;
+            padding: 8px 12px;
             background-color: #1f1f23;
             color: #71717a;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             border-right: 1px solid #2b2b2b;
             cursor: pointer;
             font-size: 12px;
@@ -307,7 +312,7 @@
 
         .tab-close {
             border-radius: 3px;
-            padding: 4px 6px;
+            padding: 2px 4px;
             font-size: 11px;
         }
 
@@ -319,7 +324,7 @@
 
         /* 4. ALT PANEL (OUTPUT) */
         .bottom-panel {
-            height: 180px;
+            height: 150px;
             background-color: #181818;
             border-top: 1px solid #2b2b2b;
             display: flex;
@@ -335,19 +340,11 @@
             padding-right: 10px;
         }
 
-        .panel-tab-group {
-            display: flex;
-        }
-
         .panel-tab {
-            padding: 8px 16px;
+            padding: 6px 12px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 11px;
-            color: #71717a;
-        }
-
-        .panel-tab.active {
+            font-size: 10.5px;
             color: #ffffff;
             border-bottom: 2px solid #3b82f6;
             background-color: #1e1e1e;
@@ -355,9 +352,9 @@
 
         .panel-content {
             flex: 1;
-            padding: 10px;
+            padding: 8px;
             font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 12px;
+            font-size: 11.5px;
             color: #e4e4e7;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -370,29 +367,29 @@
             border: none;
             color: #71717a;
             cursor: pointer;
-            font-size: 11px;
-            padding: 6px 10px;
+            font-size: 10.5px;
+            padding: 4px 8px;
         }
 
         /* STATUS BAR */
         .status-bar {
-            height: 24px;
+            height: 22px;
             background-color: #0f172a;
             color: #94a3b8;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 10px;
-            font-size: 10px;
+            padding: 0 8px;
+            font-size: 9.5px;
             border-top: 1px solid #1e293b;
         }
 
         .status-left, .status-right {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
-        /* MODAL WINDOWS */
+        /* MODALLAR */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -408,31 +405,31 @@
         .modal {
             background-color: #252526;
             border: 1px solid #3c3c3c;
-            padding: 24px;
+            padding: 20px;
             width: 100%;
-            max-width: 420px;
+            max-width: 380px;
             border-radius: 8px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
 
         .modal-title {
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #fff;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         .modal-desc {
             color: #94a3b8;
-            font-size: 12px;
-            margin-bottom: 20px;
+            font-size: 11.5px;
+            margin-bottom: 16px;
             line-height: 1.4;
         }
 
         .device-option-btn {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
             background-color: #1e1e1e;
             border: 1px solid #3c3c3c;
             color: white;
@@ -440,15 +437,9 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 13px;
+            gap: 10px;
+            font-size: 12px;
             font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .device-option-btn:hover {
-            border-color: #3b82f6;
-            background-color: #182232;
         }
 
         .modal-input {
@@ -456,42 +447,98 @@
             background-color: #1e1e1e;
             border: 1px solid #3c3c3c;
             color: white;
-            padding: 10px;
-            margin-bottom: 16px;
+            padding: 8px;
+            margin-bottom: 14px;
             border-radius: 4px;
             outline: none;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .modal-buttons {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
+            gap: 8px;
         }
 
         .modal-btn {
-            padding: 8px 16px;
+            padding: 6px 14px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             background: #3f3f46;
             color: white;
-            font-size: 12px;
+            font-size: 11.5px;
         }
 
         .modal-btn.primary {
             background: #2563eb;
         }
 
-        body.mobile-mode .sidebar {
-            position: absolute;
-            top: 0; bottom: 0; left: 0;
-            width: 75%;
-            max-width: 280px;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
         }
 
-        body.mobile-mode .dropdown-shortcut,
+        /* MOBİL ÖZEL STİLLER */
+        body.mobile-mode .hamburger-btn {
+            display: flex;
+        }
+
+        body.mobile-mode .app-brand span {
+            display: none;
+        }
+
+        /* Mobilde Görünüm ve Çalıştır menülerini gizle */
+        body.mobile-mode .menu-container.mobile-hide {
+            display: none !important;
+        }
+
+        body.mobile-mode .sidebar {
+            position: fixed;
+            top: 44px;
+            bottom: 0;
+            left: -260px;
+            width: 260px;
+            box-shadow: 6px 0 20px rgba(0,0,0,0.8);
+            z-index: 50;
+        }
+
+        body.mobile-mode .sidebar.mobile-open {
+            left: 0;
+        }
+
+        body.mobile-mode .sidebar.hidden {
+            display: flex !important;
+        }
+
+        body.mobile-mode .sidebar-backdrop.show {
+            display: block;
+        }
+
+        body.mobile-mode .status-badge span {
+            display: none;
+        }
+
+        body.mobile-mode .status-badge {
+            padding: 4px;
+        }
+
+        body.mobile-mode .dropdown {
+            width: 90vw;
+            max-width: 300px;
+            left: 5vw !important;
+            top: 50px !important;
+            border-radius: 8px;
+        }
+
+        body.mobile-mode .dropdown-item {
+            padding: 14px;
+            font-size: 13.5px;
+        }
+
         body.mobile-mode .status-right {
             display: none;
         }
@@ -499,10 +546,15 @@
 </head>
 <body class="auto-mode">
 
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
     <div class="title-bar">
         <div class="title-left">
-            <div class="app-brand">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+            <button class="hamburger-btn" onclick="toggleSidebar()" title="Menü">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+            </button>
+            <div class="app-brand" onclick="toggleSidebar()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
                 <span>North IDE</span>
             </div>
             <div class="menu-bar">
@@ -520,7 +572,7 @@
                         </div>
                         <div class="dropdown-divider"></div>
                         <div class="dropdown-item" onclick="closeCurrentTab()">
-                            <span>Sekmeyi Kapat</span>
+                            <span>Dosyayı Kapat</span>
                             <span class="dropdown-shortcut">Ctrl+W</span>
                         </div>
                     </div>
@@ -535,7 +587,8 @@
                     </div>
                 </div>
 
-                <div class="menu-container">
+                <!-- GÖRÜNÜM MENÜSÜ (Mobilde Gizlenir) -->
+                <div class="menu-container mobile-hide">
                     <span class="menu-item" onclick="toggleMenu(event, 'view-menu', this)">Görünüm</span>
                     <div class="dropdown" id="view-menu">
                         <div class="dropdown-item" onclick="toggleSidebar()">
@@ -545,7 +598,8 @@
                     </div>
                 </div>
 
-                <div class="menu-container">
+                <!-- ÇALIŞTIR MENÜSÜ (Mobilde Gizlenir) -->
+                <div class="menu-container mobile-hide">
                     <span class="menu-item" onclick="toggleMenu(event, 'run-menu', this)">Çalıştır</span>
                     <div class="dropdown" id="run-menu">
                         <div class="dropdown-item" onclick="runPythonCode()">
@@ -568,7 +622,7 @@
                 <span id="engine-status-text">Yükleniyor</span>
             </div>
             <button class="btn-run-main" onclick="runPythonCode()">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 Çalıştır
             </button>
         </div>
@@ -592,9 +646,7 @@
 
             <div class="bottom-panel">
                 <div class="panel-tabs">
-                    <div class="panel-tab-group">
-                        <div class="panel-tab active">ÇIKTI VE OTO-DEBUG (OUTPUT)</div>
-                    </div>
+                    <div class="panel-tab">ÇIKTI (OUTPUT)</div>
                     <button class="btn-clear-output" onclick="clearConsole()">Temizle</button>
                 </div>
                 <div class="panel-content" id="output-console">Sistem hazırlanıyor...</div>
@@ -665,17 +717,20 @@
 
             if (actualMode === 'mobile') {
                 document.body.classList.add('mobile-mode');
-                sidebar.classList.add('hidden');
-                btn.innerText = mode === 'auto' ? "📱 Mobil (Oto)" : "📱 Mobil";
+                sidebar.classList.remove('mobile-open');
+                sidebar.classList.remove('hidden');
+                btn.innerText = mode === 'auto' ? "📱 (Oto)" : "📱 Mobil";
                 if (editor) {
-                    editor.updateOptions({ fontSize: 12, minimap: { enabled: false }, touchSupport: true });
+                    editor.updateOptions({ fontSize: 12, minimap: { enabled: false } });
                 }
             } else {
                 document.body.classList.remove('mobile-mode');
+                sidebar.classList.remove('mobile-open');
                 sidebar.classList.remove('hidden');
-                btn.innerText = mode === 'auto' ? "💻 PC (Oto)" : "💻 PC";
+                document.getElementById('sidebar-backdrop').classList.remove('show');
+                btn.innerText = mode === 'auto' ? "💻 (Oto)" : "💻 PC";
                 if (editor) {
-                    editor.updateOptions({ fontSize: 14, minimap: { enabled: true }, touchSupport: true });
+                    editor.updateOptions({ fontSize: 14, minimap: { enabled: true } });
                 }
             }
 
@@ -719,8 +774,24 @@
                 fontSize: isMobile ? 12 : 14,
                 minimap: { enabled: !isMobile },
                 scrollBeyondLastLine: false,
-                touchSupport: true,
-                fontFamily: "'Consolas', 'Courier New', monospace"
+                fontFamily: "'Consolas', 'Courier New', monospace",
+                quickSuggestions: true,
+                wordBasedSuggestions: true,
+                acceptSuggestionOnEnter: 'on',
+                folding: true,
+                renderLineHighlight: 'all',
+                scrollbar: {
+                    verticalScrollbarSize: 14,
+                    horizontalScrollbarSize: 14,
+                    alwaysConsumeMouseWheel: false
+                }
+            });
+
+            const wrapper = document.getElementById('monaco-editor-wrapper');
+            wrapper.addEventListener('pointerdown', () => {
+                if (editor) {
+                    editor.focus();
+                }
             });
 
             editor.onDidChangeCursorPosition(e => {
@@ -747,7 +818,15 @@
         function toggleSidebar() {
             closeAllMenus();
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('hidden');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            
+            if (document.body.classList.contains('mobile-mode')) {
+                sidebar.classList.toggle('mobile-open');
+                backdrop.classList.toggle('show');
+            } else {
+                sidebar.classList.toggle('hidden');
+            }
+
             if (editor) {
                 setTimeout(() => editor.layout(), 100);
             }
@@ -785,11 +864,13 @@
             currentFile = filename;
             if (editor) {
                 editor.setValue(files[filename]);
+                editor.focus();
             }
             renderExplorer();
             
             if (document.body.classList.contains('mobile-mode')) {
-                document.getElementById('sidebar').classList.add('hidden');
+                document.getElementById('sidebar').classList.remove('mobile-open');
+                document.getElementById('sidebar-backdrop').classList.remove('show');
             }
         }
 
@@ -849,7 +930,7 @@
             if (!isVisible) {
                 const rect = btnElement.getBoundingClientRect();
                 target.style.top = (rect.bottom + 2) + 'px';
-                target.style.left = rect.left + 'px';
+                target.style.left = document.body.classList.contains('mobile-mode') ? '5vw' : rect.left + 'px';
                 target.classList.add('show');
             }
         }
