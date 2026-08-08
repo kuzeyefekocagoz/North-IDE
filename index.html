@@ -3,7 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>North IDE — Cross-Platform Hybrid Edition</title>
+
+    <title>North IDE — Online Python IDE &amp; Code Editor</title>
+    <meta name="description" content="North IDE is a fast, modern and lightweight online Python IDE and code editor. Write, run and test Python code directly in your browser.">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="https://kuzeyefekocagoz.github.io/North-IDE/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="North IDE — Online Python IDE">
+    <meta property="og:description" content="Write, run and test Python code directly in your browser with North IDE.">
+    <meta property="og:url" content="https://kuzeyefekocagoz.github.io/North-IDE/">
+    <meta property="og:site_name" content="North IDE">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="North IDE — Online Python IDE">
+    <meta name="twitter:description" content="A fast and lightweight online Python IDE and code editor.">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "North IDE",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
+        "url": "https://kuzeyefekocagoz.github.io/North-IDE/",
+        "description": "A fast, modern and lightweight online Python IDE and code editor that runs in the browser.",
+        "browserRequirements": "Requires a modern web browser with JavaScript and WebAssembly support.",
+        "programmingLanguage": "Python"
+    }
+    </script>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
     <style>
@@ -898,7 +926,28 @@
                 `[Kaydedildi] ${currentFile}\nYerel çalışma alanı da güncellendi.`;
         }
 
-        async function installPythonPackage() {
+        function openPackageModal() {
+        closeAllMenus();
+        const overlay = document.getElementById('package-modal-overlay');
+        const input = document.getElementById('package-input');
+        const status = document.getElementById('package-status');
+
+        if (!overlay) return;
+
+        overlay.style.display = 'flex';
+        if (status) status.textContent = '';
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+    }
+
+    function closePackageModal() {
+        const overlay = document.getElementById('package-modal-overlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+
+    async function installPythonPackage() {
             const input = document.getElementById('package-input');
             const status = document.getElementById('package-status');
             const button = document.getElementById('package-install-btn');
