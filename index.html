@@ -608,6 +608,187 @@
         body.mobile-mode .status-right {
             display: none;
         }
+
+        /* MOBİL EDITÖR OPTİMİZASYONU */
+        .mobile-editor-toolbar { display: none; }
+
+        @media (max-width: 768px) {
+            html, body {
+                width: 100%;
+                height: var(--north-vh, 100dvh);
+                min-height: 0;
+                overflow: hidden;
+                overscroll-behavior: none;
+            }
+
+            body.mobile-mode {
+                font-size: 13px;
+                touch-action: manipulation;
+            }
+
+            body.mobile-mode .title-bar {
+                min-height: 42px;
+                height: 42px;
+                padding: 0 6px;
+            }
+
+            body.mobile-mode .title-right { gap: 4px; }
+            body.mobile-mode .device-selector-btn { display: none; }
+
+            body.mobile-mode .btn-run-main {
+                min-height: 34px;
+                padding: 7px 11px;
+                font-size: 12px;
+                border-radius: 7px;
+            }
+
+            body.mobile-mode .main-container,
+            body.mobile-mode .editor-container {
+                min-height: 0;
+            }
+
+            body.mobile-mode .tabs-header {
+                min-height: 36px;
+                height: 36px;
+                flex-shrink: 0;
+            }
+
+            body.mobile-mode .tab {
+                min-height: 36px;
+                padding: 7px 10px;
+                font-size: 12px;
+            }
+
+            body.mobile-mode #monaco-editor-wrapper {
+                min-height: 90px;
+                flex: 1 1 auto;
+                touch-action: pan-x pan-y;
+            }
+
+            body.mobile-mode .mobile-editor-toolbar {
+                display: flex;
+                flex-shrink: 0;
+                height: 42px;
+                padding: 4px 6px;
+                gap: 5px;
+                background: #181818;
+                border-top: 1px solid #2b2b2b;
+                border-bottom: 1px solid #2b2b2b;
+                z-index: 20;
+            }
+
+            body.mobile-mode .mobile-editor-toolbar button {
+                flex: 1;
+                min-width: 0;
+                min-height: 34px;
+                border: 1px solid #3c3c3c;
+                border-radius: 6px;
+                background: #252526;
+                color: #d4d4d4;
+                font-size: 11px;
+                font-weight: 600;
+                touch-action: manipulation;
+            }
+
+            body.mobile-mode .mobile-editor-toolbar button:active {
+                background: #333;
+                transform: translateY(1px);
+            }
+
+            body.mobile-mode .mobile-editor-toolbar .mobile-run {
+                background: #16803c;
+                border-color: #1f9d50;
+                color: #fff;
+            }
+
+            body.mobile-mode .bottom-panel {
+                height: min(34vh, 290px);
+                min-height: 150px;
+                max-height: 42vh;
+                flex: 0 1 auto;
+                transition: height .18s ease, min-height .18s ease;
+            }
+
+            body.mobile-mode .bottom-panel.mobile-collapsed {
+                height: 36px;
+                min-height: 36px;
+                max-height: 36px;
+            }
+
+            body.mobile-mode .bottom-panel.mobile-collapsed .panel-content {
+                display: none;
+            }
+
+            body.mobile-mode .panel-tabs {
+                min-height: 36px;
+                height: 36px;
+                padding-right: 4px;
+            }
+
+            body.mobile-mode .panel-tab {
+                min-height: 36px;
+                padding: 8px 10px;
+                font-size: 10px;
+            }
+
+            body.mobile-mode .btn-clear-output {
+                min-width: 62px;
+                min-height: 32px;
+                padding: 6px 8px;
+                font-size: 10px;
+            }
+
+            body.mobile-mode .panel-content {
+                padding: 9px;
+                font-size: 12px;
+                line-height: 1.45;
+                overscroll-behavior: contain;
+            }
+
+            body.mobile-mode .status-bar {
+                height: 20px;
+                min-height: 20px;
+                padding: 0 6px;
+                font-size: 9px;
+            }
+
+            body.mobile-mode .status-left { gap: 6px; }
+            body.mobile-mode .status-left span:nth-child(2) { display: none; }
+            body.mobile-mode .sidebar { top: 42px; }
+
+            body.mobile-mode .modal-overlay { padding: 10px; }
+
+            body.mobile-mode .modal {
+                max-height: 85vh;
+                overflow-y: auto;
+                padding: 16px;
+            }
+
+            body.mobile-mode .monaco-editor,
+            body.mobile-mode .monaco-editor .overflow-guard,
+            body.mobile-mode .monaco-editor .inputarea {
+                touch-action: pan-x pan-y;
+            }
+
+            body.mobile-mode .monaco-editor .inputarea {
+                font-size: 16px !important;
+            }
+
+            body.mobile-mode .suggest-widget {
+                max-width: 94vw !important;
+            }
+        }
+
+        @media (max-width: 420px) {
+            body.mobile-mode .mobile-editor-toolbar button {
+                font-size: 10px;
+                padding: 0 4px;
+            }
+
+            body.mobile-mode .bottom-panel {
+                height: min(32vh, 240px);
+            }
+        }
     </style>
 </head>
 <body class="auto-mode">
@@ -731,7 +912,13 @@
             <div class="tabs-header" id="tabs-header"></div>
             <div id="monaco-editor-wrapper"></div>
 
-            <div class="bottom-panel">
+            <div class="mobile-editor-toolbar" id="mobile-editor-toolbar">
+                <button class="mobile-run" type="button" onclick="runPythonCode()">▶ Çalıştır</button>
+                <button type="button" onclick="toggleMobileOutput()">Çıktı</button>
+                <button type="button" onclick="focusMobileEditor()">⌨ Klavye</button>
+            </div>
+
+            <div class="bottom-panel" id="bottom-panel">
                 <div class="panel-tabs">
                     <div class="panel-tab active" id="output-tab">TERMINAL / ÇIKTI</div>
                     <button class="btn-clear-output" onclick="clearConsole()">Temizle</button>
@@ -1019,7 +1206,20 @@
                 sidebar.classList.remove('hidden');
                 btn.innerText = mode === 'auto' ? "📱 (Oto)" : "📱 Mobil";
                 if (editor) {
-                    editor.updateOptions({ fontSize: 12, minimap: { enabled: false } });
+                    editor.updateOptions({
+                        fontSize: 13,
+                        lineHeight: 20,
+                        minimap: { enabled: false },
+                        scrollbar: {
+                            verticalScrollbarSize: 8,
+                            horizontalScrollbarSize: 8,
+                            alwaysConsumeMouseWheel: false
+                        },
+                        padding: { top: 8, bottom: 8 },
+                        overviewRulerLanes: 0,
+                        renderLineHighlight: 'line',
+                        smoothScrolling: true
+                    });
                 }
             } else {
                 document.body.classList.remove('mobile-mode');
@@ -1087,10 +1287,23 @@
             });
 
             const wrapper = document.getElementById('monaco-editor-wrapper');
-            wrapper.addEventListener('pointerdown', () => {
-                if (editor) {
-                    editor.focus();
+
+            // Mobil tarayıcıda gerçek Monaco textarea'sını kullanıcı dokunuşuyla
+            // odaklayarak sistem klavyesinin açılmasını sağla.
+            wrapper.addEventListener('touchend', () => {
+                if (document.body.classList.contains('mobile-mode')) {
+                    focusMobileEditor();
                 }
+            }, { passive: true });
+
+            wrapper.addEventListener('click', () => {
+                if (document.body.classList.contains('mobile-mode')) {
+                    focusMobileEditor();
+                }
+            });
+
+            wrapper.addEventListener('pointerdown', () => {
+                if (editor) editor.focus();
             });
 
             editor.onDidChangeCursorPosition(e => {
@@ -1386,6 +1599,49 @@ await __north_main__()
             return await pyodideInstance.runPythonAsync(wrapped);
         }
 
+        function focusMobileEditor() {
+            if (!editor) return;
+
+            // Bu çağrı touch/click olayının içinde çalıştığı için Android/iOS
+            // klavyesinin açılmasına izin verir.
+            editor.focus();
+
+            const editorNode = editor.getDomNode();
+            const inputArea = editorNode
+                ? editorNode.querySelector('textarea.inputarea')
+                : null;
+
+            if (inputArea) {
+                inputArea.focus({ preventScroll: true });
+            }
+
+            requestAnimationFrame(() => {
+                if (editor) editor.layout();
+            });
+        }
+
+        function toggleMobileOutput() {
+            const panel = document.getElementById('bottom-panel');
+            if (!panel) return;
+
+            panel.classList.toggle('mobile-collapsed');
+
+            requestAnimationFrame(() => {
+                if (editor) editor.layout();
+            });
+        }
+
+        function syncMobileViewport() {
+            if (!window.visualViewport) return;
+
+            const height = Math.round(window.visualViewport.height);
+            document.documentElement.style.setProperty('--north-vh', height + 'px');
+
+            if (editor) {
+                requestAnimationFrame(() => editor.layout());
+            }
+        }
+
         async function runPythonCode() {
             closeAllMenus();
             removePythonInput();
@@ -1619,9 +1875,20 @@ sys.stderr = io.StringIO()
             } else if (editor) {
                 editor.layout();
             }
+            syncMobileViewport();
+        });
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', syncMobileViewport);
+            window.visualViewport.addEventListener('scroll', syncMobileViewport);
+        }
+
+        window.addEventListener('orientationchange', () => {
+            setTimeout(syncMobileViewport, 150);
         });
 
         window.onload = () => {
+            syncMobileViewport();
             const restored = restoreWorkspace();
             renderExplorer();
 
