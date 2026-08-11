@@ -789,6 +789,33 @@
                 height: min(32vh, 240px);
             }
         }
+
+        /* NORTHFIX */
+        .northfix-first{order:0;flex-shrink:0;margin-left:1px;margin-right:1px}
+        .northfix-launch-button{display:flex;align-items:center;gap:4px;min-height:26px;padding:3px 7px;border:1px solid #2563eb;border-radius:5px;background:linear-gradient(180deg,#1d4ed8,#1e40af);color:#fff;font-size:10px;font-weight:700;cursor:pointer;box-shadow:0 0 0 1px rgba(59,130,246,.12),0 2px 8px rgba(37,99,235,.18);transition:.15s ease}
+        .northfix-launch-button:hover{background:linear-gradient(180deg,#2563eb,#1d4ed8);border-color:#60a5fa;box-shadow:0 0 0 1px rgba(59,130,246,.22),0 3px 12px rgba(37,99,235,.25)}
+        .northfix-launch-button:active{transform:translateY(1px)}
+        .northfix-launch-dot{width:5px;height:5px;border-radius:50%;background:#bfdbfe;box-shadow:0 0 7px rgba(191,219,254,.7)}
+        .northfix-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;visibility:hidden;pointer-events:none;transition:.18s;z-index:1400}
+        .northfix-backdrop.show{opacity:1;visibility:visible;pointer-events:auto}
+        .northfix-drawer{position:fixed;top:0;right:0;bottom:0;width:min(430px,92vw);background:#181818;border-left:1px solid #343434;box-shadow:-14px 0 40px rgba(0,0,0,.45);transform:translateX(100%);transition:transform .2s;z-index:1500;display:flex;flex-direction:column;color:#d4d4d4}
+        .northfix-drawer.open{transform:translateX(0)}
+        .northfix-header{min-height:58px;padding:10px 12px;border-bottom:1px solid #2b2b2b;display:flex;align-items:center;justify-content:space-between}
+        .northfix-title{font-weight:700;color:#fff;font-size:14px}.northfix-subtitle{color:#71717a;font-size:10px;margin-top:2px}
+        .northfix-close{width:30px;height:30px;border:1px solid #333;background:#222;color:#aaa;border-radius:5px;cursor:pointer;font-size:20px}
+        .northfix-toolbar{padding:10px 12px;border-bottom:1px solid #2b2b2b}
+        .northfix-analyze{width:100%;padding:8px;border:1px solid #2563eb;background:#2563eb;color:#fff;border-radius:5px;font-size:11.5px;font-weight:700;cursor:pointer}
+        .northfix-analyze:disabled{opacity:.65;cursor:wait}.northfix-summary{margin-top:9px;color:#a1a1aa;font-size:10.5px;line-height:1.5}
+        .northfix-counts{display:flex;gap:6px;margin-top:8px}.northfix-count{flex:1;border:1px solid #2f2f2f;background:#202020;border-radius:5px;padding:6px 3px;text-align:center;color:#aaa;font-size:10px;cursor:pointer}.northfix-count.active{border-color:#555;color:#fff;background:#282828}.northfix-count strong{display:block;font-size:13px;color:#fff}
+        .northfix-results{flex:1;overflow:auto;padding:10px 12px 18px}.northfix-empty,.northfix-loading{color:#71717a;text-align:center;padding:36px 16px;line-height:1.6;font-size:11px}.northfix-loading{color:#94a3b8}
+        .northfix-card{border:1px solid #303030;background:#202020;border-radius:6px;padding:10px;margin-bottom:8px;cursor:pointer}.northfix-card:hover{border-color:#4a4a4a}
+        .northfix-card-head{display:flex;justify-content:space-between;gap:8px}.northfix-severity{font-size:10px;font-weight:700}.northfix-severity.error{color:#f87171}.northfix-severity.warning{color:#fbbf24}.northfix-severity.info{color:#60a5fa}.northfix-location{color:#71717a;font-size:9.5px}
+        .northfix-type{color:#e4e4e7;font-weight:700;font-size:11px;margin-top:6px}.northfix-message{color:#c4c4c4;font-size:11px;line-height:1.45;margin-top:4px}
+        .northfix-detail{margin-top:7px;padding-top:7px;border-top:1px solid #2d2d2d}.northfix-detail-label{color:#71717a;font-size:9px;text-transform:uppercase;margin-bottom:3px}.northfix-code{font-family:Consolas,monospace;font-size:10px;color:#d4d4d4;white-space:pre-wrap}
+        .northfix-actions{display:flex;gap:6px;margin-top:9px}.northfix-action{flex:1;padding:6px 7px;border:1px solid #3a3a3a;background:#282828;color:#cfcfcf;border-radius:4px;cursor:pointer;font-size:9.5px}.northfix-action:hover{background:#333;color:#fff}
+        .northfix-learning,.northfix-fix-preview{display:none;margin-top:8px;padding:8px;background:#181818;border:1px solid #303030;border-radius:4px}.northfix-learning.show,.northfix-fix-preview.show{display:block}.northfix-hint{color:#a1a1aa;font-size:10px;line-height:1.5;margin-bottom:6px}.northfix-fix-preview pre{white-space:pre-wrap;font:10px/1.5 Consolas,monospace;color:#d4d4d4}.northfix-fix-buttons{display:flex;gap:6px;margin-top:7px}
+        .northfix-error-line{background:rgba(239,68,68,.10);border-left:2px solid #ef4444}.northfix-warning-line{background:rgba(245,158,11,.08);border-left:2px solid #f59e0b}.northfix-info-line{background:rgba(59,130,246,.07);border-left:2px solid #3b82f6}
+        @media(max-width:768px){.northfix-drawer{width:100%;border-left:0}.northfix-backdrop{background:rgba(0,0,0,.5)}body.mobile-mode .northfix-launch-button{min-height:30px;padding:5px 7px;font-size:10.5px}}
     </style>
 </head>
 <body class="auto-mode">
@@ -804,6 +831,7 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
                 <span>North IDE</span>
             </div>
+            <div class="menu-container northfix-first"><button class="northfix-launch-button" type="button" onclick="openNorthFix()" title="NorthFix — Ctrl+Shift+A"><span class="northfix-launch-dot"></span>NorthFix</button></div>
             <div class="menu-bar">
                 
                 <div class="menu-container">
@@ -928,6 +956,22 @@
         </div>
     </div>
 
+    <div class="northfix-backdrop" id="northfix-backdrop" onclick="closeNorthFix()"></div>
+    <aside class="northfix-drawer" id="northfix-drawer" aria-label="NorthFix Code Analyzer">
+        <div class="northfix-header"><div><div class="northfix-title">NorthFix</div><div class="northfix-subtitle">Code Analyzer</div></div><button class="northfix-close" type="button" onclick="closeNorthFix()" aria-label="Kapat">×</button></div>
+        <div class="northfix-toolbar">
+            <button class="northfix-analyze" id="northfix-analyze-btn" type="button" onclick="runNorthFixAnalysis()">Analiz Et</button>
+            <div class="northfix-summary" id="northfix-summary">Analiz kullanıcı tarafından başlatılmayı bekliyor.</div>
+            <div class="northfix-counts">
+                <button class="northfix-count active" data-filter="all" onclick="setNorthFixFilter('all')">Tümü<strong id="nf-count-all">0</strong></button>
+                <button class="northfix-count" data-filter="error" onclick="setNorthFixFilter('error')">Hatalar<strong id="nf-count-error">0</strong></button>
+                <button class="northfix-count" data-filter="warning" onclick="setNorthFixFilter('warning')">Uyarılar<strong id="nf-count-warning">0</strong></button>
+                <button class="northfix-count" data-filter="info" onclick="setNorthFixFilter('info')">Bilgi<strong id="nf-count-info">0</strong></button>
+            </div>
+            <div style="color:#71717a;font-size:9px;margin-top:6px">Ctrl + Shift + A ile manuel analiz başlatılır.</div>
+        </div>
+        <div class="northfix-results" id="northfix-results"><div class="northfix-empty">Kod otomatik analiz edilmez.<br>Analiz Et'e basarak mevcut Python dosyasını inceleyin.</div></div>
+    </aside>
     <div class="status-bar">
         <div class="status-left">
             <span id="cursor-pos">Satır 1, Sütun 1</span>
@@ -1679,6 +1723,7 @@ sys.stderr = io.StringIO()
                 if (stderr) {
                     outputConsole.innerText += stderr;
                     outputConsole.innerText += analyzePythonError(stderr);
+                    outputConsole.innerText += "\n💡 Kodda bir hata olabilir. Ayrıntılı inceleme için NorthFix\'e göz atabilirsiniz.";
                 }
 
                 outputConsole.innerText +=
@@ -1694,6 +1739,7 @@ sys.stderr = io.StringIO()
                 outputConsole.innerText +=
                     errStr +
                     analyzePythonError(errStr) +
+                    "\n💡 Kodda bir hata olabilir. Ayrıntılı inceleme için NorthFix\'e göz atabilirsiniz." +
                     "\n----------------------------------------\n[İşlem Hata ile Tamamlandı]";
             } finally {
                 removePythonInput();
@@ -1899,6 +1945,223 @@ sys.stderr = io.StringIO()
             initEngine();
             openDeviceModal();
         };
+
+        /* ==================== NORTHFIX ENGINE ==================== */
+        const northFixState={findings:[],filter:'all',markers:[],lastCode:'',running:false};
+
+        function openNorthFix(){closeAllMenus();document.getElementById('northfix-drawer').classList.add('open');document.getElementById('northfix-backdrop').classList.add('show')}
+        function closeNorthFix(){document.getElementById('northfix-drawer').classList.remove('open');document.getElementById('northfix-backdrop').classList.remove('show')}
+        function nfEsc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+        function nfLine(code,n){return(code.split(/\r?\n/)[n-1]||'').trim()}
+        function nfAdd(a,severity,type,line,message,why,suggestion,fix=null,col=1){a.push({severity,type,line:Math.max(1,line||1),col,message,why,suggestion,fix})}
+        function clearNorthFixMarkers(){if(editor&&northFixState.markers.length)northFixState.markers=editor.deltaDecorations(northFixState.markers,[])}
+
+        function northFixStaticAnalyze(code){
+            const a=[],lines=code.split(/\r?\n/),assigned=new Map(),imports=new Map(),types=new Map(),functions=new Map();
+            const defined=new Set('print len range int float str bool list dict set tuple sum min max abs round enumerate zip map filter sorted reversed open input type isinstance issubclass Exception ValueError TypeError NameError RuntimeError True False None super object'.split(' '));
+            const keywords=new Set('and as assert async await break case class continue def del elif else except finally for from global if import in is lambda match nonlocal not or pass raise return try while with yield'.split(' '));
+            const add=(s,t,l,m,w,sg,f=null)=>nfAdd(a,s,t,l,m,w,sg,f);
+            let triple=null,stack=[],quote=null;
+
+            lines.forEach((raw,i)=>{
+                const n=i+1,t=raw.trim(),indent=(raw.match(/^ */)||[''])[0].length;
+                if(!t||t.startsWith('#'))return;
+                if(/\t/.test(raw))add('warning','Indentation',n,'Tab karakteri kullanılıyor.','Tab ve boşlukların karışması indentation sorunlarına yol açabilir.','Girintiyi boşluklarla tutarlı hale getir.');
+                if(raw.length>120)add('info','PEP8',n,`Satır ${raw.length} karakter uzunluğunda.`,'Uzun satırlar okunabilirliği azaltabilir.','Satırı böl.');
+                if(!/\t/.test(raw)&&indent%4!==0)add('warning','Indentation',n,'Girinti 4 boşluğun katı değil.','Python bloklarında tutarlı girinti gerekir.','4 boşluk kullan.');
+                if(/^\s*(if|elif|for|while|def|class|try|except|finally|with)\b.*[^:]\s*(#.*)?$/.test(raw)&&!/:$/.test(t))add('error','SyntaxError',n,'Blok başlığının sonunda `:` eksik olabilir.','Bu Python yapısı `:` ile başlamalıdır.','Satırın sonuna `:` ekle.');
+                if(/^\s*(if|elif|while)\b.*\s=\s[^=]/.test(raw))add('error','SyntaxError',n,'Koşul içinde `=` kullanılmış olabilir.','Atama operatörü karşılaştırma yapmaz.','`==` kullan.',{from:'=',to:'=='});
+                if(/^\s*except\s*:\s*pass\s*$/.test(raw))add('warning','Code quality',n,'Boş `except: pass` hataları sessizce yutuyor.','Hatalar görünmez hale gelebilir.','Beklenen istisnayı işle.');
+                if(/^\s*pass\s*$/.test(raw))add('info','Code quality',n,'Gereksiz `pass` olabilir.','Boş olmayan bloklarda gereksiz olabilir.','Gerekli değilse kaldır.');
+                if(/^\s*return\b/.test(t)){for(let j=i+1;j<lines.length;j++){if(lines[j].trim()){if((lines[j].match(/^ */)||[''])[0].length>=indent)add('warning','Unreachable code',j+1,'`return` sonrasında erişilemeyen kod bulunuyor.','Fonksiyon return sonrasında devam etmez.','Kodu taşı veya kaldır.');break}}}
+                const im=t.match(/^import\s+([A-Za-z_]\w*)/);
+                if(im){const name=im[1];if(imports.has(name))add('warning','Duplicate import',n,`Import tekrar edilmiş: ${name}.`,'Aynı modül tekrar import edilmiş.','Tekrarlanan importu kaldır.');imports.set(name,n);defined.add(name)}
+                const fm=t.match(/^from\s+([A-Za-z_]\w*)\s+import\s+(.+)/);
+                if(fm){const name=fm[2].split(',')[0].trim().split(' as ')[0];defined.add(name)}
+                const loop=t.match(/^for\s+([A-Za-z_]\w*)\s+in\s+/); if(loop){defined.add(loop[1]);assigned.set(loop[1],n)}
+                const dm=t.match(/^def\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*:/);
+                if(dm){const name=dm[1];if(functions.has(name))add('warning','Duplicate function',n,`Fonksiyon tekrar tanımlanmış: ${name}.`,'İkinci tanım ilkini gölgeler.','Gereksiz tanımı kaldır.');functions.set(name,{line:n});defined.add(name);dm[2].split(',').map(x=>x.trim().split('=')[0]).filter(Boolean).forEach(x=>defined.add(x))}
+                const am=t.match(/^([A-Za-z_]\w*)\s*=\s*(.+)$/);
+                if(am){const name=am[1],rhs=am[2];if(assigned.has(name))add('info','Code quality',n,`Değişken yeniden atanıyor: ${name}.`,'Önceki değer eziliyor olabilir.','Atamanın gerekli olup olmadığını kontrol et.');assigned.set(name,n);defined.add(name);
+                    if(/^input\s*\(/.test(rhs))types.set(name,'str');else if(/^["']/.test(rhs))types.set(name,'str');else if(/^\d+(\.\d+)?$/.test(rhs))types.set(name,rhs.includes('.')?'float':'int');else if(/^\[/.test(rhs))types.set(name,'list');
+                }
+                const sec=/\b(api[_-]?key|password|passwd|secret|token|access[_-]?token|private[_-]?key)\b\s*[:=]\s*["'][^"']{4,}["']/i;
+                if(sec.test(raw))add('warning','Security',n,'Güvenlik uyarısı: Hassas bir anahtar doğrudan kaynak koduna yazılmış olabilir.','Secret değerleri kaynakta tutmak risklidir.','Ortam değişkeni veya secret yönetimi kullan.');
+                if(/^\s*(while\s+True|while\s+1)\s*:/.test(raw)&&!lines.slice(i+1,i+31).some(x=>/\bbreak\b/.test(x)))add('warning','Loop',n,'Şüpheli sonsuz döngü bulunuyor.','Koşul sürekli doğru ve yakınında break görünmüyor.','Kontrollü sonlandırma ekle.');
+                if(/\binput\s*\(/.test(raw)&&!/\b(int|float)\s*\(\s*input\s*\(/.test(raw))add('info','Input type',n,'`input()` sonucu string olur.','Sayısal işlem veya karşılaştırma yapılacaksa dönüşüm gerekir.','Gerekiyorsa `int(input(...))` veya `float(input(...))` kullan.');
+            });
+
+            lines.forEach((raw,i)=>{
+                const n=i+1,t=raw.trim();
+                if(!t||t.startsWith('#'))return;
+                const bin=t.match(/([A-Za-z_]\w*)\s*([+\-*\/])\s*([A-Za-z_]\w*|\d+)/);
+                if(bin){const x=types.get(bin[1]),y=types.get(bin[3])||(/^\d/.test(bin[3])?'int':null);if((x==='str'&&y==='int')||(x==='int'&&y==='str')||(x==='list'&&y==='int')||(x==='str'&&y==='str'&&bin[2]==='-'))add('error','TypeError',n,`${x} ile ${y} uyumsuz bir işlem yapılmaya çalışılıyor.`,'Değişken türleri bu operatörle uyumlu görünmüyor.','Uygun türe dönüştür veya operatörü değiştir.')}
+                const inp=t.match(/^([A-Za-z_]\w*)\s*=\s*input\s*\(/);
+                if(inp){const name=inp[1],future=lines.slice(i+1,i+7).join('\n');if(new RegExp('\\b'+name+'\\s*[<>]=?\\s*\\d').test(future))add('warning','TypeError',n,'`input()` string döndürür; burada sayısal karşılaştırma yapılıyor.',`${name} başlangıçta string türündedir.`,`${name} = int(input(...))`,{from:name+' = input(',to:name+' = int(input('})}
+                if(/^\s*print\s*\(\s*[A-Za-z_]\w*\s*\)/.test(t)){const name=t.match(/print\s*\(\s*([A-Za-z_]\w*)/)[1],d=assigned.get(name);if(!d)add('warning','NameError',n,`${name} kullanılmadan önce tanımlanmamış görünüyor.`,`\`${name}\` için önceki atama bulunamadı.`,'Önce tanımla.');else if(d>n)add('error','NameError',n,`${name} tanımlanmadan önce kullanılıyor.`,`Atama satır ${d} sonrasında.`,'Önce tanımla, sonra kullan.')}
+                const im=t.match(/^import\s+([A-Za-z_]\w*)/);if(im&&!lines.some((x,j)=>j!==i&&new RegExp('\\b'+im[1]+'\\b').test(x)))add('info','Unused import',n,`Kullanılmayan import: ${im[1]}.`,'Modülün başka kullanımını bulamadık.','Gereksizse importu kaldır.');
+            });
+
+            for(let i=0;i<code.length;i++){const c=code[i];if(triple){if(code.slice(i,i+3)===triple){triple=null;i+=2}continue}if(quote){if(c==='\\'){i++;continue}if(c===quote)quote=null;continue}if((c==="'"||c==='"')&&code.slice(i,i+3)===c.repeat(3)){triple=c.repeat(3);i+=2;continue}if(c==="'"||c==='"'){quote=c;continue}if('([{'.includes(c))stack.push({c,line:code.slice(0,i).split('\n').length});else if(')]}'.includes(c)){const e={')':'(',']':'[','}':'{'}[c],top=stack.pop();if(!top||top.c!==e)add('error','SyntaxError',code.slice(0,i).split('\n').length,`Kapanış karakteri eşleşmiyor: ${c}.`,'Ayraç dengesi bozulmuş olabilir.','Açılış/kapanış karakterlerini eşleştir.')}}
+            if(quote)add('error','SyntaxError',lines.length,'Kapanmamış string olabilir.','Kapanış tırnağı bulunamadı.','Eksik tırnağı ekle.');
+            if(triple)add('error','SyntaxError',lines.length,'Kapanmamış çok satırlı string olabilir.','Üç tırnaklı string kapatılmamış.','Eksik üçlü tırnağı ekle.');
+            if(stack.length)add('error','SyntaxError',stack[stack.length-1].line,'Kapanmamış parantez veya ayraç var.','Açılan ayraç kapanmamış.','Eksik kapanışı ekle.');
+
+            /* Conservative undefined-name detection for common standalone uses. */
+            lines.forEach((raw,i)=>{
+                const n=i+1,t=raw.trim();if(!t||t.startsWith('#'))return;
+                const stripped=t.replace(/(["'])(?:\\.|(?!\1).)*\1/g,'');
+                const toks=stripped.match(/\b[A-Za-z_]\w*\b/g)||[];
+                toks.forEach(name=>{if(keywords.has(name)||defined.has(name)||imports.has(name)||functions.has(name)||name==='self'||name==='cls')return;
+                    if(/^\s*(def|class)\b/.test(t)||/^\s*(import|from)\b/.test(t)||/^\s*print\s*\(/.test(t))return;if(/^\s*(if|elif|while)\b.*\s=\s[^=]/.test(t))return;
+                    if(/^\s*([A-Za-z_]\w*)\s*=/.test(t)&&t.match(/^\s*([A-Za-z_]\w*)\s*=/)[1]===name)return;
+                    if(['print','input'].includes(name))return;
+                    if(/^(?:if|elif|while|for)\b/.test(t)&&t.indexOf(name)===0)return;
+                    if(!assigned.has(name))add('warning','NameError',n,`Tanımsız isim kullanımı olabilir: ${name}.`,`Bu isim için önceki bir tanım bulunamadı.`,'İsmi tanımla veya doğru scope içinden kullan.');
+                });
+            });
+            /* Function-scope escape check: names assigned inside a function are not module globals. */
+            const localScopes=[];
+            for(let i=0;i<lines.length;i++){
+                const dm=lines[i].match(/^(\s*)def\s+\w+\s*\([^)]*\)\s*:/);
+                if(!dm)continue;
+                const base=dm[1].length,locals=new Set();
+                let j=i+1;
+                for(;j<lines.length;j++){
+                    const raw=lines[j],trim=raw.trim(),ind=(raw.match(/^ */)||[''])[0].length;
+                    if(trim&&ind<=base)break;
+                    const am=trim.match(/^([A-Za-z_]\w*)\s*=/);if(am)locals.add(am[1]);
+                    const fm=trim.match(/^for\s+([A-Za-z_]\w*)\s+in\s+/);if(fm)locals.add(fm[1]);
+                }
+                localScopes.push({start:i+1,end:j,names:locals});
+            }
+            localScopes.forEach(sc=>{
+                sc.names.forEach(name=>{
+                    for(let k=sc.end;k<lines.length;k++){
+                        const t=lines[k].trim();
+                        if(!t||t.startsWith('#'))continue;
+                        if(new RegExp('\\b'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b').test(t) &&
+                           !new RegExp('^'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*=').test(t)){
+                            add('warning','Scope',k+1,`${name} fonksiyon scope'unda tanımlanmış; dışarıda kullanılıyor.`,`\`${name}\` yalnızca fonksiyon içinde tanımlı görünüyor.`,'Değişkeni dış scope içinde yeniden tanımla veya değeri return ile dışarı aktar.');
+                            break;
+                        }
+                    }
+                });
+            });
+
+            const seen=new Set();
+            return a.filter(x=>{const k=`${x.severity}|${x.type}|${x.line}|${x.message}`;if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>x.line-y.line||({error:0,warning:1,info:2}[x.severity]-({error:0,warning:1,info:2}[y.severity])));
+        }
+
+        async function northFixPythonSyntax(code){
+            if(!pyodideInstance)return [];
+            try{
+                const raw=await pyodideInstance.runPythonAsync(`
+import ast, json, tokenize, io
+_src=${JSON.stringify(code)}
+_out=[]
+try: ast.parse(_src)
+except (SyntaxError,IndentationError,TabError) as e: _out.append({"kind":type(e).__name__,"line":getattr(e,"lineno",1) or 1,"col":getattr(e,"offset",1) or 1,"message":str(getattr(e,"msg",e))})
+try: list(tokenize.generate_tokens(io.StringIO(_src).readline))
+except (tokenize.TokenError,IndentationError,TabError) as e: _out.append({"kind":type(e).__name__,"line":1,"col":1,"message":str(e)})
+json.dumps(_out)
+`);
+                return JSON.parse(raw).map(x=>({severity:'error',type:x.kind||'SyntaxError',line:x.line||1,col:x.col||1,message:x.message||'Python syntax problemi bulundu.',why:'Python AST/tokenize katmanı kodu ayrıştıramadı.',suggestion:'Satırdaki Python sözdizimini düzeltip tekrar analiz et.',fix:null}));
+            }catch(e){return []}
+        }
+
+        function setNorthFixFilter(f){northFixState.filter=f;document.querySelectorAll('.northfix-count').forEach(x=>x.classList.toggle('active',x.dataset.filter===f));northFixRender()}
+        function northFixGoTo(line,col=1){if(!editor)return;line=Math.max(1,Math.min(line,editor.getModel().getLineCount()));editor.revealLineInCenter(line);editor.setPosition({lineNumber:line,column:col});editor.focus()}
+        function northFixApplyMarkers(){clearNorthFixMarkers();if(!editor)return;northFixState.markers=editor.deltaDecorations([],northFixState.findings.map(f=>({range:new monaco.Range(f.line,1,f.line,Math.min(editor.getModel().getLineMaxColumn(f.line),80)),options:{isWholeLine:true,className:`northfix-${f.severity}-line`,overviewRuler:{color:f.severity==='error'?'#ef4444':f.severity==='warning'?'#f59e0b':'#3b82f6',position:monaco.editor.OverviewRulerLane.Full}}})))}
+
+        function northFixRender(){
+            const box=document.getElementById('northfix-results'),list=northFixState.findings.filter(f=>northFixState.filter==='all'||f.severity===northFixState.filter);
+            if(!list.length){box.innerHTML=`<div class="northfix-empty">${northFixState.findings.length?'Bu filtrede bulgu yok.':'Belirgin statik analiz problemi bulunamadı.'}</div>`;return}
+            box.innerHTML=list.map((f)=>{
+                const i=northFixState.findings.indexOf(f),icon=f.severity==='error'?'🔴':f.severity==='warning'?'🟡':'🔵';
+                return `<div class="northfix-card" onclick="northFixGoTo(${f.line},${f.col||1})">
+                    <div class="northfix-card-head"><span class="northfix-severity ${f.severity}">${icon} ${f.severity==='error'?'HATA':f.severity==='warning'?'UYARI':'BİLGİ'}</span><span class="northfix-location">Satır ${f.line}</span></div>
+                    <div class="northfix-type">${nfEsc(f.type)}</div><div class="northfix-message">${nfEsc(f.message)}</div>
+                    <div class="northfix-detail"><div class="northfix-detail-label">Neden</div><div class="northfix-code">${nfEsc(f.why)}</div></div>
+                    <div class="northfix-detail"><div class="northfix-detail-label">Öneri</div><div class="northfix-code">${nfEsc(f.suggestion)}</div></div>
+                    <div class="northfix-detail"><div class="northfix-detail-label">Kod</div><div class="northfix-code">${nfEsc(nfLine(northFixState.lastCode,f.line))}</div></div>
+                    <div class="northfix-actions"><button class="northfix-action" type="button" onclick="event.stopPropagation();northFixGoTo(${f.line},${f.col||1})">Satıra Git</button><button class="northfix-action" type="button" onclick="event.stopPropagation();northFixLearn(${i})">Öğrenerek Çöz</button>${f.fix?`<button class="northfix-action" type="button" onclick="event.stopPropagation();northFixPrepareFix(${i})">Düzelt</button>`:''}</div>
+                    <div class="northfix-learning" id="nf-learn-${i}"></div><div class="northfix-fix-preview" id="nf-fix-${i}"></div>
+                </div>`;
+            }).join('');
+        }
+
+        function northFixLearn(i){
+            const f = northFixState.findings[i];
+            const box = document.getElementById('nf-learn-' + i);
+            if (!f || !box) return;
+
+            box.classList.add('show');
+            box.innerHTML = '';
+
+            const isInputType = /TypeError|input/i.test((f.type || '') + ' ' + (f.message || ''));
+            const hint1 = document.createElement('div');
+            hint1.className = 'northfix-hint';
+            hint1.textContent = 'İpucu 1: ' + (isInputType ? 'input() fonksiyonunun dönüş türünü düşün.' : 'Hatanın bulunduğu satırın Python kuralını düşün.');
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'northfix-action';
+            nextBtn.type = 'button';
+            nextBtn.textContent = 'Sonraki İpucu';
+
+            const hint2 = document.createElement('div');
+            hint2.className = 'northfix-hint';
+            hint2.style.display = 'none';
+            hint2.style.marginTop = '7px';
+            hint2.textContent = 'İpucu 2: ' + (isInputType ? 'Kullanıcıdan alınan veri başlangıçta hangi türde?' : `${f.line}. satırdan önce hangi değerlerin mevcut olduğunu kontrol et.`);
+
+            const solutionBtn = document.createElement('button');
+            solutionBtn.className = 'northfix-action';
+            solutionBtn.type = 'button';
+            solutionBtn.style.marginTop = '6px';
+            solutionBtn.textContent = 'Çözümü Göster';
+
+            const solution = document.createElement('div');
+            solution.className = 'northfix-hint';
+            solution.style.display = 'none';
+            solution.style.marginTop = '7px';
+            solution.textContent = 'Çözüm: ' + (f.suggestion || 'İlgili satırı ve hata nedenini inceleyin.');
+
+            nextBtn.addEventListener('click', () => {
+                nextBtn.style.display = 'none';
+                hint2.style.display = 'block';
+                solutionBtn.style.display = 'block';
+            });
+            solutionBtn.addEventListener('click', () => {
+                solutionBtn.style.display = 'none';
+                solution.style.display = 'block';
+            });
+            box.append(hint1, nextBtn, hint2, solutionBtn, solution);
+        }
+        function northFixPrepareFix(i){
+            const f=northFixState.findings[i];if(!f||!f.fix||!editor)return;const line=editor.getModel().getLineContent(f.line),replacement=line.replace(f.fix.from,f.fix.to),b=document.getElementById('nf-fix-'+i);b.classList.add('show');b.innerHTML=`<div class="northfix-detail-label">Bu değişiklik uygulanacak:</div><pre>${nfEsc(replacement)}</pre><div class="northfix-fix-buttons"><button class="northfix-action" type="button" onclick="northFixApplyFix(${i})">Uygula</button><button class="northfix-action" type="button" onclick="this.parentElement.parentElement.classList.remove('show')">İptal</button></div>`;
+        }
+        function northFixApplyFix(i){const f=northFixState.findings[i];if(!f||!f.fix||!editor)return;const m=editor.getModel(),line=m.getLineContent(f.line);if(!line.includes(f.fix.from))return;editor.executeEdits('NorthFix',[{range:new monaco.Range(f.line,1,f.line,m.getLineMaxColumn(f.line)),text:line.replace(f.fix.from,f.fix.to)}]);setTimeout(runNorthFixAnalysis,0)}
+
+        async function runNorthFixAnalysis(){
+            if(northFixState.running)return;
+            if(!editor||!currentFile){openNorthFix();document.getElementById('northfix-summary').textContent='Analiz için açık bir Python dosyası gerekli.';return}
+            if(getFileLanguage(currentFile)!=='python'){openNorthFix();document.getElementById('northfix-summary').textContent='NorthFix şu anda Python dosyalarını analiz eder.';return}
+            northFixState.running=true;openNorthFix();const btn=document.getElementById('northfix-analyze-btn');btn.disabled=true;btn.textContent='Analiz ediliyor...';document.getElementById('northfix-summary').textContent='Kod analiz ediliyor...';document.getElementById('northfix-results').innerHTML='<div class="northfix-loading">Kod analiz ediliyor...</div>';
+            await new Promise(r=>setTimeout(r,0));
+            const code=editor.getValue();northFixState.lastCode=code;clearNorthFixMarkers();
+            const findings=northFixStaticAnalyze(code).concat(await northFixPythonSyntax(code));
+            const seen=new Set();northFixState.findings=findings.filter(f=>{const k=`${f.severity}|${f.type}|${f.line}|${f.message}`;if(seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>a.line-b.line);
+            const c={error:0,warning:0,info:0};northFixState.findings.forEach(f=>c[f.severity]++);
+            document.getElementById('nf-count-all').textContent=northFixState.findings.length;document.getElementById('nf-count-error').textContent=c.error;document.getElementById('nf-count-warning').textContent=c.warning;document.getElementById('nf-count-info').textContent=c.info;
+            document.getElementById('northfix-summary').textContent=northFixState.findings.length?`Analiz tamamlandı — ${c.error} Hata, ${c.warning} Uyarı, ${c.info} Bilgi`:'✓ Belirgin statik analiz problemi bulunamadı.';
+            northFixApplyMarkers();northFixRender();btn.disabled=false;btn.textContent='Analiz Et';northFixState.running=false;
+        }
+
+        window.addEventListener('keydown',e=>{
+            if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='a'){e.preventDefault();runNorthFixAnalysis()}
+            if(e.key==='Escape'&&document.getElementById('northfix-drawer').classList.contains('open'))closeNorthFix()
+        });
     </script>
 </body>
 </html>
