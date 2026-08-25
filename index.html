@@ -198,6 +198,9 @@
             color: #94a3b8;
         }
 
+        .mobile-device-control { display: none; }
+        body.mobile-mode .mobile-device-control { display: flex; }
+
         .status-dot {
             width: 6px;
             height: 6px;
@@ -222,6 +225,15 @@
             display: flex;
             align-items: center;
             gap: 4px;
+        }
+
+        .btn-run-main:disabled, .mobile-run:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .btn-run-main.is-stop, .mobile-run.is-stop {
+            background-color: #dc2626;
         }
 
         /* 2. GÖVDE VE SIDEBAR */
@@ -272,6 +284,36 @@
             cursor: pointer;
         }
 
+        .workspace-tools {
+            padding: 8px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            gap: 5px;
+        }
+
+        .workspace-search {
+            width: 100%;
+            background: #202020;
+            border: 1px solid #363636;
+            color: #ddd;
+            border-radius: 4px;
+            padding: 7px 8px;
+            font-size: 11px;
+            outline: none;
+        }
+
+        .workspace-search:focus { border-color: #3b82f6; }
+        .workspace-tool-btn {
+            border: 1px solid #363636;
+            background: #252526;
+            color: #a1a1aa;
+            border-radius: 4px;
+            padding: 5px 7px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .workspace-tool-btn:hover { color: #fff; border-color: #555; background: #2d2d30; }
+
         .file-tree {
             list-style: none;
             overflow-y: auto;
@@ -290,16 +332,40 @@
             font-size: 13px;
         }
 
+        .file-actions {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+        }
+
         .file-item:active, .file-item.active {
             background-color: #27272a;
             color: #3b82f6;
             font-weight: 600;
         }
 
-        .file-delete-btn {
-            color: #ef4444;
-            font-size: 14px;
-            padding: 4px 8px;
+        .file-action-btn, .file-delete-btn {
+            color: #8b8b93;
+            font-size: 12px;
+            padding: 4px 7px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity .15s, color .15s, background .15s;
+        }
+
+        .file-item:hover .file-action-btn, .file-item:focus-within .file-action-btn,
+        .file-item:hover .file-delete-btn, .file-item:focus-within .file-delete-btn {
+            opacity: 1;
+        }
+
+        .file-action-btn:hover {
+            color: #93c5fd;
+            background: rgba(59, 130, 246, .16);
+        }
+
+        .file-delete-btn:hover {
+            color: #fca5a5;
+            background: rgba(239, 68, 68, .16);
         }
 
         /* 3. EDİTÖR VE SEKMELER */
@@ -539,6 +605,12 @@
         .modal-btn.primary {
             background: #2563eb;
         }
+
+        .modal-btn.danger {
+            background: #b91c1c;
+        }
+
+        .modal-btn.danger:hover { background: #dc2626; }
 
         .sidebar-backdrop {
             display: none;
@@ -841,9 +913,8 @@
                             <span>Yeni Dosya</span>
                             <span class="dropdown-shortcut">Ctrl+N</span>
                         </div>
-                        <div class="dropdown-item" onclick="downloadCurrentFile()">
+                        <div class="dropdown-item" onclick="saveAsCurrentFile()">
                             <span>Farklı Kaydet...</span>
-                            <span class="dropdown-shortcut">Ctrl+S</span>
                         </div>
                         <div class="dropdown-item" onclick="openFilePicker()">
                             <span>Dosya Aç...</span>
@@ -890,6 +961,10 @@
                             <span>Proje Gezgini</span>
                             <span class="dropdown-shortcut">Ctrl+B</span>
                         </div>
+                        <div class="dropdown-item" onclick="openDeviceModal()">
+                            <span>Arayüz Modu</span>
+                            <span>Otomatik / PC / Mobil</span>
+                        </div>
                     </div>
                 </div>
 
@@ -898,7 +973,7 @@
                     <span class="menu-item" onclick="toggleMenu(event, 'run-menu', this)">Çalıştır</span>
                     <div class="dropdown" id="run-menu">
                         <div class="dropdown-item" onclick="runPythonCode()">
-                            <span>Kodu Derle ve Çalıştır</span>
+                            <span>Python Kodunu Çalıştır</span>
                             <span class="dropdown-shortcut">Shift+Enter</span>
                         </div>
                     </div>
@@ -908,7 +983,7 @@
         </div>
 
         <div class="title-right">
-            <button class="device-selector-btn" onclick="openDeviceModal()" id="active-mode-btn">
+            <button class="device-selector-btn mobile-device-control" onclick="openDeviceModal()" id="active-mode-btn" title="Arayüz modunu değiştir">
                 🔍 Otomatik
             </button>
 
@@ -916,7 +991,7 @@
                 <div class="status-dot" id="engine-status-dot"></div>
                 <span id="engine-status-text">Yükleniyor</span>
             </div>
-            <button class="btn-run-main" onclick="runPythonCode()">
+            <button class="btn-run-main" id="run-python-btn" onclick="runPythonCode()">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 Çalıştır
             </button>
@@ -924,6 +999,7 @@
     </div>
 
     <input id="file-upload-input" class="file-upload-btn" type="file" accept=".py,.txt,.json,.md,.html,.css,.js" multiple onchange="handleFileUpload(event)">
+    <input id="workspace-import-input" class="file-upload-btn" type="file" accept=".northide.json,.json" onchange="importWorkspace(event)">
     <div class="main-container">
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -933,6 +1009,11 @@
                     <span onclick="toggleSidebar()" title="Kapat">✕</span>
                 </div>
             </div>
+            <div class="workspace-tools">
+                <input id="workspace-search" class="workspace-search" type="search" placeholder="Dosyalarda ara..." oninput="renderExplorer(this.value)">
+                <button class="workspace-tool-btn" type="button" onclick="exportWorkspace()" title="Çalışma alanını dışa aktar">↓</button>
+                <button class="workspace-tool-btn" type="button" onclick="document.getElementById('workspace-import-input').click()" title="Çalışma alanını içe aktar">↑</button>
+            </div>
             <ul class="file-tree" id="file-tree"></ul>
         </div>
 
@@ -941,7 +1022,7 @@
             <div id="monaco-editor-wrapper"></div>
 
             <div class="mobile-editor-toolbar" id="mobile-editor-toolbar">
-                <button class="mobile-run" type="button" onclick="runPythonCode()">▶ Çalıştır</button>
+                <button class="mobile-run" id="mobile-run-python-btn" type="button" onclick="runPythonCode()">▶ Çalıştır</button>
                 <button type="button" onclick="toggleMobileOutput()">Çıktı</button>
                 <button type="button" onclick="focusMobileEditor()">⌨ Klavye</button>
             </div>
@@ -958,7 +1039,7 @@
 
     <div class="northfix-backdrop" id="northfix-backdrop" onclick="closeNorthFix()"></div>
     <aside class="northfix-drawer" id="northfix-drawer" aria-label="NorthFix Code Analyzer">
-        <div class="northfix-header"><div><div class="northfix-title">NorthFix</div><div class="northfix-subtitle">Code Analyzer</div></div><button class="northfix-close" type="button" onclick="closeNorthFix()" aria-label="Kapat">×</button></div>
+        <div class="northfix-header"><div><div class="northfix-title">NorthFix</div><div class="northfix-subtitle">Deneysel Python kod analizörü</div></div><button class="northfix-close" type="button" onclick="closeNorthFix()" aria-label="Kapat">×</button></div>
         <div class="northfix-toolbar">
             <button class="northfix-analyze" id="northfix-analyze-btn" type="button" onclick="runNorthFixAnalysis()">Analiz Et</button>
             <div class="northfix-summary" id="northfix-summary">Analiz kullanıcı tarafından başlatılmayı bekliyor.</div>
@@ -978,7 +1059,7 @@
             <span>UTF-8</span>
         </div>
         <div class="status-right">
-            <span>Python 3.11 (Pyodide) + Auto-Complete & Debug</span>
+            <span>Python 3.11 (Pyodide) + Otomatik Tamamlama</span>
         </div>
     </div>
 
@@ -1010,6 +1091,17 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="confirm-modal-overlay">
+        <div class="modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+            <div class="modal-title" id="confirm-modal-title">Dosyayı sil</div>
+            <div class="modal-desc" id="confirm-modal-desc"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn" type="button" onclick="closeConfirmModal(false)">İptal</button>
+                <button class="modal-btn danger" id="confirm-delete-btn" type="button" onclick="closeConfirmModal(true)">Sil</button>
+            </div>
+        </div>
+    </div>
+
 
     <div class="modal-overlay" id="package-modal-overlay">
         <div class="modal">
@@ -1033,11 +1125,15 @@
         // North IDE starts with an empty workspace.
         let files = {};
         let currentFile = null;
+        let openFiles = [];
+        let saveTimer = null;
+        let workspaceDbPromise = null;
         let pyodideInstance = null;
         let selectedMode = 'auto';
         let pythonInputActive = false;
         let pythonInputResolver = null;
         let pythonExecutionId = 0;
+        let pythonRunning = false;
         let errorDecorations = [];
         const STORAGE_KEY = 'north-ide-workspace-v3';
         let workspaceRestored = false;
@@ -1046,15 +1142,42 @@
 
 
         function saveWorkspace() {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(writeWorkspace, 250);
+        }
+
+        function writeWorkspace() {
+            const snapshot = {
+                files,
+                currentFile,
+                openFiles,
+                savedAt: Date.now()
+            };
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                    files,
-                    currentFile,
-                    savedAt: Date.now()
-                }));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
             } catch (e) {
                 console.warn('North IDE localStorage kayıt hatası:', e);
             }
+            if (window.indexedDB) {
+                getWorkspaceDb().then(db => {
+                    const tx = db.transaction('workspace', 'readwrite');
+                    tx.objectStore('workspace').put(snapshot, 'current');
+                }).catch(e => console.warn('North IDE IndexedDB kayıt hatası:', e));
+            }
+        }
+
+        function getWorkspaceDb() {
+            if (!window.indexedDB) return Promise.reject(new Error('IndexedDB desteklenmiyor.'));
+            if (workspaceDbPromise) return workspaceDbPromise;
+            workspaceDbPromise = new Promise((resolve, reject) => {
+                const request = indexedDB.open('north-ide-db', 1);
+                request.onupgradeneeded = () => {
+                    request.result.createObjectStore('workspace');
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+            return workspaceDbPromise;
         }
 
         function restoreWorkspace() {
@@ -1067,6 +1190,10 @@
                 files = data.files;
                 const names = Object.keys(files);
                 currentFile = names.includes(data.currentFile) ? data.currentFile : (names[0] || null);
+                openFiles = Array.isArray(data.openFiles)
+                    ? data.openFiles.filter(name => names.includes(name))
+                    : [];
+                if (currentFile && !openFiles.includes(currentFile)) openFiles.push(currentFile);
                 workspaceRestored = names.length > 0;
                 return names.length > 0;
             } catch (e) {
@@ -1076,7 +1203,54 @@
         }
 
         function clearSavedWorkspace() {
+            clearTimeout(saveTimer);
             localStorage.removeItem(STORAGE_KEY);
+        }
+
+        function exportWorkspace() {
+            writeWorkspace();
+            const payload = JSON.stringify({
+                type: 'north-ide-workspace',
+                version: 1,
+                files,
+                currentFile,
+                openFiles
+            }, null, 2);
+            const blob = new Blob([payload], { type: 'application/json;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'north-ide-workspace.northide.json';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+
+        async function importWorkspace(event) {
+            const file = event.target.files && event.target.files[0];
+            event.target.value = '';
+            if (!file) return;
+            try {
+                const data = JSON.parse(await file.text());
+                if (data.type !== 'north-ide-workspace' || !data.files || typeof data.files !== 'object') {
+                    throw new Error('Geçersiz North IDE çalışma alanı dosyası.');
+                }
+                files = Object.fromEntries(Object.entries(data.files).filter(([, content]) => typeof content === 'string'));
+                const names = Object.keys(files);
+                openFiles = Array.isArray(data.openFiles)
+                    ? data.openFiles.filter(name => names.includes(name))
+                    : [];
+                currentFile = names.includes(data.currentFile) ? data.currentFile : (names[0] || null);
+                if (currentFile && !openFiles.includes(currentFile)) openFiles.push(currentFile);
+                if (currentFile) loadEditorFile(currentFile);
+                else clearEditor();
+                saveWorkspace();
+                renderExplorer();
+                updateRunControls();
+                document.getElementById('output-console').innerText = '[Sistem]: Çalışma alanı içe aktarıldı.';
+            } catch (error) {
+                document.getElementById('output-console').innerText = '[Hata]: Çalışma alanı içe aktarılamadı. ' + error.message;
+            }
         }
 
         function getFileLanguage(filename) {
@@ -1087,6 +1261,31 @@
                 txt: 'plaintext'
             };
             return map[ext] || 'plaintext';
+        }
+
+        function canRunCurrentFile() {
+            return Boolean(currentFile && getFileLanguage(currentFile) === 'python');
+        }
+
+        function updateRunControls() {
+            const desktopButton = document.getElementById('run-python-btn');
+            const mobileButton = document.getElementById('mobile-run-python-btn');
+            const runnable = canRunCurrentFile();
+
+            [desktopButton, mobileButton].forEach(button => {
+                if (!button) return;
+                button.disabled = !runnable && !pythonRunning;
+                button.classList.toggle('is-stop', pythonRunning);
+                button.textContent = pythonRunning
+                    ? '■ Durdur'
+                    : (button === mobileButton ? '▶ Çalıştır' : '▶ Çalıştır');
+            });
+
+            if (desktopButton) {
+                desktopButton.title = runnable
+                    ? (pythonRunning ? 'Çalışan programı durdur' : 'Python kodunu çalıştır')
+                    : 'Yalnızca Python dosyaları çalıştırılabilir';
+            }
         }
 
         function clearErrorMarkers() {
@@ -1130,6 +1329,9 @@
             const selected = Array.from(event.target.files || []);
             for (const file of selected) {
                 try {
+                    if (!file.name.includes('.')) {
+                        continue;
+                    }
                     const content = await file.text();
                     files[file.name] = content;
                     currentFile = file.name;
@@ -1145,6 +1347,7 @@
                 monaco.editor.setModelLanguage(editor.getModel(), getFileLanguage(currentFile));
                 editor.setValue(files[currentFile]);
             }
+            updateRunControls();
         }
 
         function saveCurrentFile() {
@@ -1155,6 +1358,32 @@
             downloadCurrentFile(true);
             document.getElementById('output-console').innerText =
                 `[Kaydedildi] ${currentFile}\nYerel çalışma alanı da güncellendi.`;
+        }
+
+        function saveAsCurrentFile() {
+            closeAllMenus();
+            if (!currentFile || !editor) return;
+
+            showModal("Farklı Kaydet", currentFile, (name) => {
+                name = name.trim();
+                if (!name) return;
+                if (Object.prototype.hasOwnProperty.call(files, name) && name !== currentFile) {
+                    if (!confirm(`${name} zaten var. Üzerine yazılsın mı?`)) return;
+                }
+
+                const content = editor.getValue();
+                delete files[currentFile];
+                files[name] = content;
+                currentFile = name;
+                editor.updateOptions({ readOnly: false });
+                monaco.editor.setModelLanguage(editor.getModel(), getFileLanguage(name));
+                editor.setValue(content);
+                saveWorkspace();
+                renderExplorer();
+                updateRunControls();
+                document.getElementById('output-console').innerText =
+                    `[Kaydedildi] ${name}\nYerel çalışma alanı da güncellendi.`;
+            });
         }
 
         function openPackageModal() {
@@ -1368,6 +1597,7 @@
                 editor.setValue(files[currentFile]);
                 renderExplorer();
             }
+            updateRunControls();
         });
 
         async function initEngine() {
@@ -1400,40 +1630,77 @@
             }
         }
 
-        function renderExplorer() {
+        function loadEditorFile(filename) {
+            if (!editor || !filename || !Object.prototype.hasOwnProperty.call(files, filename)) return;
+            editor.updateOptions({ readOnly: false });
+            monaco.editor.setModelLanguage(editor.getModel(), getFileLanguage(filename));
+            editor.setValue(files[filename]);
+            editor.focus();
+        }
+
+        function clearEditor() {
+            if (!editor) return;
+            editor.setValue('');
+            editor.updateOptions({ readOnly: true });
+            clearErrorMarkers();
+        }
+
+        function renderExplorer(searchTerm = '') {
             const fileTree = document.getElementById('file-tree');
             const tabsHeader = document.getElementById('tabs-header');
-            
+            const query = String(searchTerm).trim().toLowerCase();
             fileTree.innerHTML = '';
             tabsHeader.innerHTML = '';
 
-            if (Object.keys(files).length === 0) {
+            const visibleFiles = Object.keys(files).filter(filename =>
+                !query || filename.toLowerCase().includes(query)
+            );
+
+            if (visibleFiles.length === 0) {
                 const empty = document.createElement('li');
                 empty.className = 'file-item';
                 empty.style.cursor = 'default';
                 empty.style.color = '#71717a';
-                empty.innerHTML = '<span>Henüz dosya yok</span>';
+                empty.innerHTML = `<span>${Object.keys(files).length ? 'Aramaya uygun dosya yok' : 'Henüz dosya yok'}</span>`;
                 fileTree.appendChild(empty);
             }
 
-            Object.keys(files).forEach(filename => {
+            visibleFiles.forEach(filename => {
                 const li = document.createElement('li');
                 li.className = `file-item ${filename === currentFile ? 'active' : ''}`;
-                li.innerHTML = `
-                    <span onclick="switchFile('${filename}')">📄 ${filename}</span>
-                    <span class="file-delete-btn" onclick="deleteFile(event, '${filename}')">✕</span>
-                `;
+                const name = document.createElement('span');
+                name.textContent = '📄 ' + filename;
+                name.onclick = () => switchFile(filename);
+                const rename = document.createElement('span');
+                rename.className = 'file-action-btn';
+                rename.textContent = '✎';
+                rename.title = 'Yeniden adlandır';
+                rename.onclick = (event) => renameFile(event, filename);
+                const remove = document.createElement('span');
+                remove.className = 'file-delete-btn';
+                remove.textContent = '×';
+                remove.title = 'Dosyayı sil';
+                remove.onclick = (event) => deleteFile(event, filename);
+                const actions = document.createElement('span');
+                actions.className = 'file-actions';
+                actions.append(rename, remove);
+                li.append(name, actions);
                 fileTree.appendChild(li);
+            });
 
-                if (filename === currentFile) {
-                    const tab = document.createElement('div');
-                    tab.className = 'tab active';
-                    tab.innerHTML = `
-                        <span>${filename}</span>
-                        <span class="tab-close" onclick="closeCurrentTab()">✕</span>
-                    `;
-                    tabsHeader.appendChild(tab);
-                }
+            openFiles.filter(filename => Object.prototype.hasOwnProperty.call(files, filename)).forEach(filename => {
+                const tab = document.createElement('div');
+                tab.className = `tab ${filename === currentFile ? 'active' : ''}`;
+                const label = document.createElement('span');
+                label.textContent = filename;
+                label.onclick = () => switchFile(filename);
+                const close = document.createElement('span');
+                close.className = 'tab-close';
+                close.textContent = '✕';
+                close.title = 'Sekmeyi kapat';
+                close.onclick = (event) => closeTab(event, filename);
+                tab.append(label, close);
+                tabsHeader.appendChild(tab);
             });
         }
 
@@ -1441,14 +1708,11 @@
             if (!Object.prototype.hasOwnProperty.call(files, filename)) return;
 
             currentFile = filename;
-            if (editor) {
-                editor.updateOptions({ readOnly: false });
-                monaco.editor.setModelLanguage(editor.getModel(), getFileLanguage(filename));
-                editor.setValue(files[filename]);
-                editor.focus();
-            }
+            if (!openFiles.includes(filename)) openFiles.push(filename);
+            loadEditorFile(filename);
             saveWorkspace();
-            renderExplorer();
+            renderExplorer(document.getElementById('workspace-search')?.value || '');
+            updateRunControls();
             
             if (document.body.classList.contains('mobile-mode')) {
                 document.getElementById('sidebar').classList.remove('mobile-open');
@@ -1456,8 +1720,40 @@
             }
         }
 
+        function closeTab(event, filename) {
+            if (event) event.stopPropagation();
+            openFiles = openFiles.filter(name => name !== filename);
+            if (currentFile === filename) {
+                currentFile = openFiles[openFiles.length - 1] || null;
+                if (currentFile) loadEditorFile(currentFile);
+                else clearEditor();
+            }
+            saveWorkspace();
+            renderExplorer(document.getElementById('workspace-search')?.value || '');
+            updateRunControls();
+        }
+
+        function renameFile(event, filename) {
+            event.stopPropagation();
+            showModal('Dosyayı Yeniden Adlandır', filename, (newName) => {
+                newName = newName.trim();
+                if (!newName || newName === filename) return;
+                if (Object.prototype.hasOwnProperty.call(files, newName)) {
+                    alert(`${newName} zaten mevcut.`);
+                    return;
+                }
+                files[newName] = files[filename];
+                delete files[filename];
+                openFiles = openFiles.map(name => name === filename ? newName : name);
+                if (currentFile === filename) currentFile = newName;
+                saveWorkspace();
+                renderExplorer(document.getElementById('workspace-search')?.value || '');
+                updateRunControls();
+            });
+        }
+
         function analyzePythonError(errorMsg) {
-            let advice = "\n--- 🔍 OTO-DEBUG (HATA ANALİZİ) ---\n";
+            let advice = "\n--- 🔍 NorthFix önerisi ---\n";
             if (errorMsg.includes("NameError")) {
                 advice += "• Olası Neden: Tanımlanmamış bir değişken veya fonksiyon adı kullanılıyor.";
             } else if (errorMsg.includes("SyntaxError") || errorMsg.includes("IndentationError")) {
@@ -1688,12 +1984,21 @@ await __north_main__()
 
         async function runPythonCode() {
             closeAllMenus();
-            removePythonInput();
 
             const outputConsole = document.getElementById('output-console');
 
+            if (pythonRunning) {
+                stopPythonCode();
+                return;
+            }
+
             if (currentFile === null) {
                 outputConsole.innerText = "[Sistem]: Çalıştırmak için önce Dosya > Yeni Dosya ile bir Python dosyası oluşturun.";
+                return;
+            }
+
+            if (!canRunCurrentFile()) {
+                outputConsole.innerText = "[Sistem]: Yalnızca .py uzantılı Python dosyaları çalıştırılabilir.";
                 return;
             }
 
@@ -1703,6 +2008,8 @@ await __north_main__()
             }
 
             const executionId = ++pythonExecutionId;
+            pythonRunning = true;
+            updateRunControls();
             outputConsole.innerText =
                 `[Çalıştırılıyor: ${currentFile}...]\n----------------------------------------\n`;
 
@@ -1715,6 +2022,11 @@ sys.stderr = io.StringIO()
 `);
 
                 await runPythonWithInteractiveInput(editor.getValue(), executionId);
+
+                if (executionId !== pythonExecutionId) {
+                    outputConsole.innerText += "\n[İşlem durduruldu]";
+                    return;
+                }
 
                 const stdout = pyodideInstance.runPython("sys.stdout.getvalue()");
                 const stderr = pyodideInstance.runPython("sys.stderr.getvalue()");
@@ -1743,7 +2055,24 @@ sys.stderr = io.StringIO()
                     "\n----------------------------------------\n[İşlem Hata ile Tamamlandı]";
             } finally {
                 removePythonInput();
+                if (executionId === pythonExecutionId) {
+                    pythonRunning = false;
+                    updateRunControls();
+                }
             }
+        }
+
+        function stopPythonCode() {
+            if (!pythonRunning) return;
+            // Pyodide ana thread'de çalıştığı için bu sürüm, özellikle
+            // input() beklemelerini ve sonraki bridge adımlarını iptal eder.
+            // Sonsuz döngüleri tamamen kesmek için runtime Worker'a taşınmalıdır.
+            pythonExecutionId++;
+            pythonRunning = false;
+            removePythonInput();
+            updateRunControls();
+            document.getElementById('output-console').innerText +=
+                "\n\n[İşlem durdurma istendi. Aktif giriş beklemesi iptal edildi.]";
         }
 
         function toggleMenu(e, id, btnElement) {
@@ -1802,7 +2131,9 @@ sys.stderr = io.StringIO()
                 if (name) {
                     name = name.trim();
                     if (!name) return;
-                    if (!name.endsWith('.py')) name += '.py';
+                    // Uzantı yazılmadıysa Python dosyası varsayılır; yazılmış
+                    // uzantılar korunur ve Monaco uygun dili seçer.
+                    if (!name.includes('.')) name += '.py';
 
                     if (Object.prototype.hasOwnProperty.call(files, name)) {
                         switchFile(name);
@@ -1813,6 +2144,7 @@ sys.stderr = io.StringIO()
                     switchFile(name);
                     saveWorkspace();
                     renderExplorer();
+                    updateRunControls();
                 }
             });
         }
@@ -1821,26 +2153,23 @@ sys.stderr = io.StringIO()
             closeAllMenus();
             if (currentFile === null) return;
 
-            delete files[currentFile];
-            const remaining = Object.keys(files);
-
-            if (remaining.length > 0) {
-                switchFile(remaining[0]);
-            } else {
-                currentFile = null;
-                if (editor) {
-                    editor.setValue('');
-                    editor.updateOptions({ readOnly: true });
-                }
-                saveWorkspace();
-                renderExplorer();
+            // Sekmeyi kapatmak dosyayı silmemeli. Dosya Explorer'dan
+            // ayrıca ve onay alınarak silinir.
+            currentFile = null;
+            if (editor) {
+                editor.setValue('');
+                editor.updateOptions({ readOnly: true });
             }
+            saveWorkspace();
+            renderExplorer();
+            updateRunControls();
         }
 
         function deleteFile(e, filename) {
             e.stopPropagation();
-            if (confirm(`${filename} dosyasını silmek istediğinize emin misiniz?`)) {
+            showConfirmModal('Dosyayı sil', `"${filename}" dosyasını silmek istediğine emin misin? Bu işlem geri alınamaz.`, () => {
                 delete files[filename];
+                openFiles = openFiles.filter(name => name !== filename);
                 const remaining = Object.keys(files);
                 if (remaining.length > 0) {
                     switchFile(remaining[0]);
@@ -1852,8 +2181,9 @@ sys.stderr = io.StringIO()
                     }
                     saveWorkspace();
                     renderExplorer();
+                    updateRunControls();
                 }
-            }
+            });
         }
 
         function showModal(title, placeholder, onConfirm) {
@@ -1873,6 +2203,23 @@ sys.stderr = io.StringIO()
 
         function closeModal() {
             document.getElementById('modal-overlay').style.display = 'none';
+        }
+
+        let confirmAction = null;
+
+        function showConfirmModal(title, description, onConfirm) {
+            document.getElementById('confirm-modal-title').textContent = title;
+            document.getElementById('confirm-modal-desc').textContent = description;
+            confirmAction = onConfirm;
+            document.getElementById('confirm-modal-overlay').style.display = 'flex';
+            document.getElementById('confirm-delete-btn').focus();
+        }
+
+        function closeConfirmModal(confirmed) {
+            document.getElementById('confirm-modal-overlay').style.display = 'none';
+            const action = confirmAction;
+            confirmAction = null;
+            if (confirmed && action) action();
         }
 
         window.addEventListener('keydown', (e) => {
@@ -1947,7 +2294,7 @@ sys.stderr = io.StringIO()
         };
 
         /* ==================== NORTHFIX ENGINE ==================== */
-        const northFixState={findings:[],filter:'all',markers:[],lastCode:'',running:false};
+        const northFixState={findings:[],filter:'all',markers:[],lastCode:'',lastFile:null,modelVersion:null,running:false};
 
         function openNorthFix(){closeAllMenus();document.getElementById('northfix-drawer').classList.add('open');document.getElementById('northfix-backdrop').classList.add('show')}
         function closeNorthFix(){document.getElementById('northfix-drawer').classList.remove('open');document.getElementById('northfix-backdrop').classList.remove('show')}
@@ -2139,9 +2486,23 @@ json.dumps(_out)
             box.append(hint1, nextBtn, hint2, solutionBtn, solution);
         }
         function northFixPrepareFix(i){
-            const f=northFixState.findings[i];if(!f||!f.fix||!editor)return;const line=editor.getModel().getLineContent(f.line),replacement=line.replace(f.fix.from,f.fix.to),b=document.getElementById('nf-fix-'+i);b.classList.add('show');b.innerHTML=`<div class="northfix-detail-label">Bu değişiklik uygulanacak:</div><pre>${nfEsc(replacement)}</pre><div class="northfix-fix-buttons"><button class="northfix-action" type="button" onclick="northFixApplyFix(${i})">Uygula</button><button class="northfix-action" type="button" onclick="this.parentElement.parentElement.classList.remove('show')">İptal</button></div>`;
+            const f=northFixState.findings[i];if(!f||!f.fix||!editor)return;
+            if(currentFile!==northFixState.lastFile||editor.getValue()!==northFixState.lastCode){document.getElementById('northfix-summary').textContent='Kod analizden sonra değişti. Önce analizi yeniden çalıştır.';return}
+            const line=editor.getModel().getLineContent(f.line),replacement=line.replace(f.fix.from,f.fix.to),b=document.getElementById('nf-fix-'+i);
+            b.classList.add('show');
+            b.innerHTML=`<div class="northfix-detail-label">Değişiklik önizlemesi</div><pre>${nfEsc(line)}\n→ ${nfEsc(replacement)}</pre><div class="northfix-fix-buttons"><button class="northfix-action" type="button" onclick="northFixApplyFix(${i})">Uygula</button><button class="northfix-action" type="button" onclick="this.parentElement.parentElement.classList.remove('show')">İptal</button></div>`;
         }
-        function northFixApplyFix(i){const f=northFixState.findings[i];if(!f||!f.fix||!editor)return;const m=editor.getModel(),line=m.getLineContent(f.line);if(!line.includes(f.fix.from))return;editor.executeEdits('NorthFix',[{range:new monaco.Range(f.line,1,f.line,m.getLineMaxColumn(f.line)),text:line.replace(f.fix.from,f.fix.to)}]);setTimeout(runNorthFixAnalysis,0)}
+        function northFixApplyFix(i){
+            const f=northFixState.findings[i];
+            if(!f||!f.fix||!editor)return;
+            if(currentFile!==northFixState.lastFile||editor.getValue()!==northFixState.lastCode){document.getElementById('northfix-summary').textContent='Kod değiştiği için düzeltme uygulanmadı. Analizi yenile.';return}
+            const m=editor.getModel(),line=m.getLineContent(f.line);
+            if(!line.includes(f.fix.from))return;
+            editor.pushUndoStop();
+            editor.executeEdits('NorthFix',[{range:new monaco.Range(f.line,1,f.line,m.getLineMaxColumn(f.line)),text:line.replace(f.fix.from,f.fix.to)}]);
+            editor.pushUndoStop();
+            setTimeout(runNorthFixAnalysis,0);
+        }
 
         async function runNorthFixAnalysis(){
             if(northFixState.running)return;
@@ -2149,7 +2510,7 @@ json.dumps(_out)
             if(getFileLanguage(currentFile)!=='python'){openNorthFix();document.getElementById('northfix-summary').textContent='NorthFix şu anda Python dosyalarını analiz eder.';return}
             northFixState.running=true;openNorthFix();const btn=document.getElementById('northfix-analyze-btn');btn.disabled=true;btn.textContent='Analiz ediliyor...';document.getElementById('northfix-summary').textContent='Kod analiz ediliyor...';document.getElementById('northfix-results').innerHTML='<div class="northfix-loading">Kod analiz ediliyor...</div>';
             await new Promise(r=>setTimeout(r,0));
-            const code=editor.getValue();northFixState.lastCode=code;clearNorthFixMarkers();
+            const code=editor.getValue();northFixState.lastCode=code;northFixState.lastFile=currentFile;northFixState.modelVersion=editor.getModel().getAlternativeVersionId();clearNorthFixMarkers();
             const findings=northFixStaticAnalyze(code).concat(await northFixPythonSyntax(code));
             const seen=new Set();northFixState.findings=findings.filter(f=>{const k=`${f.severity}|${f.type}|${f.line}|${f.message}`;if(seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>a.line-b.line);
             const c={error:0,warning:0,info:0};northFixState.findings.forEach(f=>c[f.severity]++);
