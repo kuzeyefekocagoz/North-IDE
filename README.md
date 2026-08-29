@@ -1,7 +1,7 @@
 
 ## Online IDE
 
-[**NORTH IDE'Yİ AÇ →**](https://kuzeyefekocagoz.github.io/North-IDE/)
+[**NORTH IDE →**](https://kuzeyefekocagoz.github.io/North-IDE/)
 
 Python kodlarını doğrudan tarayıcıda yaz ve çalıştır.
 
