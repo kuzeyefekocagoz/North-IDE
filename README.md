@@ -1,11 +1,4 @@
-
-## Online IDE
-
-[**NORTH IDE →**](https://kuzeyefekocagoz.github.io/North-IDE/)
-
-Python kodlarını doğrudan tarayıcıda yaz ve çalıştır.
-
-# North IDE
+# [**NORTH IDE**](https://kuzeyefekocagoz.github.io/North-IDE/)
 
 Tarayıcı üzerinde Python kodu yazıp çalıştırabileceğiniz hafif ve modern bir web IDE.
 
